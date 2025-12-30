@@ -8,7 +8,7 @@ export default defineConfig({
     lib: {
       entry: path.resolve(__dirname, 'index.ts'),
       name: 'LeaguePack',
-      fileName: 'frontend',
+      fileName: () => 'frontend.js',
       formats: ['iife'],
     },
     rollupOptions: {
