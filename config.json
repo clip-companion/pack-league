@@ -1,0 +1,112 @@
+{
+  "id": 1,
+  "slug": "league",
+  "name": "League of Legends",
+
+  "detection": {
+    "process_names": ["LeagueOfLegends", "League of Legends"],
+    "window_titles": ["League of Legends (TM)"]
+  },
+
+  "stage": {
+    "width": 1920,
+    "height": 1080,
+    "background": "#000000",
+
+    "sources": {
+      "league_game": {
+        "type": "window",
+        "match": {
+          "process": "LeagueOfLegends"
+        }
+      },
+      "league_client": {
+        "type": "window",
+        "match": {
+          "title_contains": "League of Legends"
+        }
+      }
+    },
+
+    "layouts": {
+      "game_fullscreen": {
+        "description": "Full screen game capture",
+        "sources": [
+          {
+            "id": "league_game",
+            "fit": "fill"
+          }
+        ]
+      },
+      "client_centered": {
+        "description": "Client window centered on stage",
+        "sources": [
+          {
+            "id": "league_client",
+            "anchor": "center",
+            "fit": "native"
+          }
+        ]
+      },
+      "client_fullscreen": {
+        "description": "Client scaled to fill stage",
+        "sources": [
+          {
+            "id": "league_client",
+            "fit": "fill"
+          }
+        ]
+      }
+    },
+
+    "rules": [
+      {
+        "when": { "available": "league_game" },
+        "layout": "game_fullscreen"
+      },
+      {
+        "when": { "available": "league_client" },
+        "layout": "client_centered"
+      }
+    ]
+  },
+
+  "triggers": {
+    "champion_kill": {
+      "pre_secs": 10,
+      "post_secs": 5
+    },
+    "death": {
+      "pre_secs": 5,
+      "post_secs": 3
+    },
+    "multikill": {
+      "pre_secs": 15,
+      "post_secs": 5
+    },
+    "ace": {
+      "pre_secs": 10,
+      "post_secs": 5
+    },
+    "dragon": {
+      "pre_secs": 10,
+      "post_secs": 5
+    },
+    "baron": {
+      "pre_secs": 15,
+      "post_secs": 5
+    },
+    "herald": {
+      "pre_secs": 10,
+      "post_secs": 5
+    },
+    "turret": {
+      "pre_secs": 5,
+      "post_secs": 3
+    },
+    "inhibitor": {
+      "pre_secs": 5,
+      "post_secs": 3
+    }
+  }
+}

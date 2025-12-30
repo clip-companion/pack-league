@@ -1,0 +1,20 @@
+# Build outputs
+daemon/target/
+frontend/dist/
+frontend/node_modules/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Lock files (we want these in the repo for reproducible builds)
+# !frontend/pnpm-lock.yaml

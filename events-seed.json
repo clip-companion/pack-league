@@ -1,0 +1,140 @@
+{
+  "generated_at": "2025-12-30T08:49:58.484Z",
+  "source_versions": {
+    "riot-events": "2025-12-30"
+  },
+  "events": [
+    {
+      "event_key": "Ace",
+      "display_name": "Ace",
+      "description": null,
+      "category": "combat",
+      "metadata_fields": [
+        "Acer",
+        "AcingTeam"
+      ],
+      "default_pre_secs": 15,
+      "default_post_secs": 5
+    },
+    {
+      "event_key": "ChampionKill",
+      "display_name": "Champion Kill",
+      "description": null,
+      "category": "combat",
+      "metadata_fields": [
+        "Assisters",
+        "KillerName",
+        "VictimName"
+      ],
+      "default_pre_secs": 10,
+      "default_post_secs": 5
+    },
+    {
+      "event_key": "Multikill",
+      "display_name": "Multikill",
+      "description": null,
+      "category": "combat",
+      "metadata_fields": [
+        "KillStreak",
+        "KillerName"
+      ],
+      "default_pre_secs": 12,
+      "default_post_secs": 5
+    },
+    {
+      "event_key": "GameStart",
+      "display_name": "Game Start",
+      "description": null,
+      "category": "game",
+      "metadata_fields": [],
+      "default_pre_secs": 0,
+      "default_post_secs": 3
+    },
+    {
+      "event_key": "MinionsSpawning",
+      "display_name": "Minions Spawning",
+      "description": null,
+      "category": "game",
+      "metadata_fields": [],
+      "default_pre_secs": 0,
+      "default_post_secs": 0
+    },
+    {
+      "event_key": "BaronKill",
+      "display_name": "Baron Kill",
+      "description": null,
+      "category": "objective",
+      "metadata_fields": [
+        "Assisters",
+        "KillerName",
+        "Stolen"
+      ],
+      "default_pre_secs": 20,
+      "default_post_secs": 5
+    },
+    {
+      "event_key": "DragonKill",
+      "display_name": "Dragon Kill",
+      "description": null,
+      "category": "objective",
+      "metadata_fields": [
+        "Assisters",
+        "DragonType",
+        "KillerName",
+        "Stolen"
+      ],
+      "default_pre_secs": 15,
+      "default_post_secs": 5
+    },
+    {
+      "event_key": "HeraldKill",
+      "display_name": "Herald Kill",
+      "description": null,
+      "category": "objective",
+      "metadata_fields": [
+        "Assisters",
+        "KillerName",
+        "Stolen"
+      ],
+      "default_pre_secs": 15,
+      "default_post_secs": 5
+    },
+    {
+      "event_key": "FirstBrick",
+      "display_name": "First Brick",
+      "description": null,
+      "category": "structure",
+      "metadata_fields": [
+        "KillerName"
+      ],
+      "default_pre_secs": 8,
+      "default_post_secs": 5
+    },
+    {
+      "event_key": "InhibKilled",
+      "display_name": "Inhib Killed",
+      "description": null,
+      "category": "structure",
+      "metadata_fields": [
+        "Assisters",
+        "InhibKilled",
+        "KillerName"
+      ],
+      "default_pre_secs": 8,
+      "default_post_secs": 5
+    },
+    {
+      "event_key": "TurretKilled",
+      "display_name": "Turret Killed",
+      "description": null,
+      "category": "structure",
+      "metadata_fields": [
+        "Assisters",
+        "KillerName",
+        "TurretKilled"
+      ],
+      "default_pre_secs": 5,
+      "default_post_secs": 3
+    }
+  ]
+}

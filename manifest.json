@@ -1,0 +1,21 @@
+{
+  "id": "league",
+  "game_id": 1,
+  "name": "League of Legends",
+  "version": "0.1.0",
+  "min_app_version": "0.1.0",
+  "protocol_version": 1,
+  "features": {
+    "live_events": true,
+    "match_history": true,
+    "clip_triggers": true
+  },
+  "daemon": {
+    "binary": "daemon",
+    "poll_interval_ms": 500
+  },
+  "frontend": {
+    "bundle": "frontend.js",
+    "entry": "LeaguePack"
+  }
+}

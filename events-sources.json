@@ -1,0 +1,35 @@
+{
+  "sources": [
+    {
+      "id": "riot-events",
+      "url": "https://static.developer.riotgames.com/docs/lol/liveclientdata_events.json",
+      "type": "json",
+      "transform": {
+        "path": "Events",
+        "eventKeyField": "EventName"
+      }
+    }
+  ],
+  "defaults": {
+    "category_map": {
+      "ChampionKill": { "category": "combat", "pre_secs": 10, "post_secs": 5 },
+      "Multikill": { "category": "combat", "pre_secs": 12, "post_secs": 5 },
+      "Ace": { "category": "combat", "pre_secs": 15, "post_secs": 5 },
+      "FirstBlood": { "category": "combat", "pre_secs": 10, "post_secs": 5 },
+      "DragonKill": { "category": "objective", "pre_secs": 15, "post_secs": 5 },
+      "BaronKill": { "category": "objective", "pre_secs": 20, "post_secs": 5 },
+      "HeraldKill": { "category": "objective", "pre_secs": 15, "post_secs": 5 },
+      "VoidgrubKill": { "category": "objective", "pre_secs": 12, "post_secs": 5 },
+      "AtakhanKill": { "category": "objective", "pre_secs": 20, "post_secs": 5 },
+      "FirstBrick": { "category": "structure", "pre_secs": 8, "post_secs": 5 },
+      "TurretKilled": { "category": "structure", "pre_secs": 5, "post_secs": 3 },
+      "InhibKilled": { "category": "structure", "pre_secs": 8, "post_secs": 5 },
+      "InhibRespawningSoon": { "category": "structure", "pre_secs": 0, "post_secs": 0 },
+      "InhibRespawned": { "category": "structure", "pre_secs": 0, "post_secs": 0 },
+      "GameStart": { "category": "game", "pre_secs": 0, "post_secs": 3 },
+      "GameEnd": { "category": "game", "pre_secs": 10, "post_secs": 5 },
+      "MinionsSpawning": { "category": "game", "pre_secs": 0, "post_secs": 0 },
+      "*": { "category": "other", "pre_secs": 10, "post_secs": 5 }
+    }
+  }
+}
