@@ -1,8 +1,9 @@
-//! League of Legends Integration
+//! League of Legends Integration (Standalone Gamepack)
 //!
-//! This crate implements `GameIntegration` for League of Legends.
-//! It provides:
+//! This crate provides the League of Legends integration as a standalone
+//! gamepack daemon. It communicates with the main daemon via IPC protocol.
 //!
+//! Features:
 //! - LCU (League Client Update) API client for game state
 //! - WebSocket monitoring for real-time gameflow events
 //! - Live Client Data API integration for in-game stats
@@ -22,14 +23,9 @@
 //! │         └─────────────────┼─────────────────┘          │
 //! │                           │                            │
 //! │                           ▼                            │
-//! │                 GameIntegration Trait                  │
+//! │                    IPC Protocol                        │
 //! └─────────────────────────────────────────────────────────┘
 //! ```
-//!
-//! # Game-Specific Database
-//!
-//! This integration creates and manages the `league_match_details` table
-//! which stores League-specific match data (champion, KDA, items, etc.).
 
 // Re-export the integration for daemon registration
 pub use integration::LeagueIntegration;
@@ -57,6 +53,7 @@ mod lcu_websocket;
 mod live_client;
 mod live_match_service;
 mod poller;
+pub mod protocol;
 mod state;
 mod triggers;
 mod types;

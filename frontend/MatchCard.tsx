@@ -1,12 +1,12 @@
 import { motion } from "framer-motion";
-import { cn } from "@/lib/cn";
+import { cn } from "./lib/cn";
 import {
   formatTimeAgo,
   formatGameDurationFull,
   formatKDARatio,
   getKDALabel,
   formatLPChange,
-} from "@/lib/formatters";
+} from "./lib/formatters";
 import {
   getChampionIconUrl,
   getSpellIconUrl,
@@ -18,8 +18,8 @@ import {
   normalizeKeystoneName,
   normalizeRuneTreeName,
 } from "./lib/ddragon";
-import { cardHover, springGentle } from "@/lib/animations";
-import { GameIcon } from "@/components/GameIcon";
+import { cardHover, springGentle } from "./lib/animations";
+import { GameIcon } from "./components/GameIcon";
 import { useDDragonReady } from "./hooks/useDDragon";
 import type { LeagueMatch } from "./types";
 
