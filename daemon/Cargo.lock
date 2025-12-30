@@ -160,6 +160,7 @@ dependencies = [
 [[package]]
 name = "companion-pack-protocol"
 version = "0.1.0"
+source = "git+https://github.com/Lucidiac/companion-pack-protocol.git#5ce09b0ee10123e9f6d2e980c244478b8c30038d"
 dependencies = [
  "serde",
  "serde_json",

@@ -13,9 +13,8 @@ name = "league_integration"
 path = "src/lib.rs"
 
 [dependencies]
-# Shared protocol types from main companion app
-# Use local path for development, switch to git/crates.io for releases
-companion-pack-protocol = { path = "../../league-companion/crates/pack-protocol" }
+# Shared protocol types from companion app
+companion-pack-protocol = { git = "https://github.com/Lucidiac/companion-pack-protocol.git" }
 
 # Async runtime
 tokio = { version = "1", features = ["full"] }
