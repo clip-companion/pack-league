@@ -11,10 +11,12 @@ use tracing::{debug, info};
 
 use crate::game_finalizer::GameFinalizer;
 use crate::protocol::{
-    ConnectionStatus, GameEvent, IntegrationStatus, LiveMatchData, MatchData, MatchResult,
-    SessionContext,
+    ConnectionStatus, IntegrationStatus, LiveMatchData, MatchData, MatchResult, SessionContext,
 };
 use crate::{GameflowPhase, LiveClientApi, LiveMatch, RankedEntry, LEAGUE_GAME_ID, LEAGUE_SLUG};
+
+// Use shared GameEvent from the protocol crate
+use companion_pack_protocol::GameEvent;
 
 /// League of Legends game integration.
 ///

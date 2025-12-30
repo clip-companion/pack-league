@@ -158,6 +158,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "companion-pack-protocol"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "core-foundation-sys"
 version = "0.8.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -702,6 +710,7 @@ dependencies = [
  "async-trait",
  "base64",
  "chrono",
+ "companion-pack-protocol",
  "futures-util",
  "regex",
  "reqwest",

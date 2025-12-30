@@ -8,6 +8,7 @@
     "dev": "vite build --watch"
   },
   "dependencies": {
+    "@companion/pack-runtime": "file:../../league-companion/packages/pack-runtime",
     "clsx": "^2.1.0",
     "framer-motion": "^11.0.0",
     "lucide-react": "^0.460.0",
