@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { cn } from "@/lib/cn";
-import { formatDuration, formatKDARatio, getKDALabel } from "@/lib/formatters";
+import { cn } from "./lib/cn";
+import { formatDuration, formatKDARatio, getKDALabel } from "./lib/formatters";
 import {
   getChampionIconUrl,
   getItemIconUrlById,
@@ -10,7 +10,7 @@ import {
   getRuneTreeIconUrl,
   getKeystoneColor,
 } from "./lib/ddragon";
-import { springGentle } from "@/lib/animations";
+import { springGentle } from "./lib/animations";
 import type { LeagueLiveMatch, LiveItem } from "./types";
 
 interface LiveMatchCardProps {

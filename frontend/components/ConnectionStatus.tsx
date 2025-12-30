@@ -1,11 +1,11 @@
 /**
- * ConnectionStatus - Full connection status display for settings page
+ * ConnectionStatus - Placeholder for host-provided connection indicator
  *
- * Re-exports the ConnectionIndicator component with full variant.
+ * This is a stub component. The actual implementation is provided by the host app.
  */
 
-import { ConnectionIndicator } from "@/components/ConnectionIndicator";
-
 export function ConnectionStatus() {
-  return <ConnectionIndicator variant="full" />;
+  // This component is meant to be replaced by the host app's ConnectionIndicator
+  // For standalone pack builds, we just return null
+  return null;
 }

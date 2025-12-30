@@ -7,15 +7,15 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { Download, Check, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from './ui/button';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
+} from './ui/tooltip';
 import { useDDragon } from '../hooks/useDDragon';
-import { cn } from '@/lib/cn';
+import { cn } from '../lib/cn';
 
 export function DDragonStatus() {
   const { loading, ready, progress, version } = useDDragon();
