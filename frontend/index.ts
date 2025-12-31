@@ -79,6 +79,17 @@ const leaguePack: GamePack<LeagueMatch, LeagueLiveMatch> = {
 
 export default leaguePack;
 
+// Self-initialize DDragon when pack is loaded dynamically
+// Deferred to next tick so pack registration completes first
+if (typeof window !== 'undefined') {
+  setTimeout(() => {
+    console.log('[LeaguePack] Self-initializing DDragon...');
+    initDDragon().catch(err => {
+      console.warn('[LeaguePack] DDragon init failed:', err);
+    });
+  }, 0);
+}
+
 // Re-export types for convenience
 export type { LeagueMatch, LeagueLiveMatch } from "./types";
 export * from "./types";

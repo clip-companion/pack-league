@@ -38,8 +38,26 @@ export function MatchCard({ match, isSelected, onClick }: MatchCardProps) {
   const kdaLabel = getKDALabel(match.kills, match.deaths, match.assists);
   const lpChange = formatLPChange(match.lpChange);
 
-  // Force icon URL recalculation when DDragon becomes ready
-  void ddReady;
+  // Show loading skeleton while DDragon initializes
+  if (!ddReady) {
+    return (
+      <div className={cn(
+        "w-full rounded-lg border overflow-hidden bg-card animate-pulse",
+        isSelected && "border-primary/50"
+      )}>
+        <div className="flex h-[88px]">
+          <div className="w-1 shrink-0 bg-muted" />
+          <div className="flex-1 p-3 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-muted" />
+            <div className="flex-1 space-y-2">
+              <div className="h-4 w-24 bg-muted rounded" />
+              <div className="h-3 w-16 bg-muted rounded" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Normalize names to handle both IDs and names (backwards compatibility)
   const spell1Name = normalizeSpellName(match.summonerSpell1);
@@ -105,7 +123,7 @@ export function MatchCard({ match, isSelected, onClick }: MatchCardProps) {
         </div>
 
         {/* Center content area - vertically centers champ+kda+items */}
-        <div className="py-2 pl-2 flex items-center overflow-hidden border-l border-border/30">
+        <div className="py-2 pl-2 flex items-center border-l border-border/30 shrink-0">
           {/* Content box: champ+kda on top, items below */}
           <div className="flex flex-col">
             {/* Top row: Champ, KDA */}

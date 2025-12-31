@@ -229,14 +229,29 @@ const GAME_SLUG = 'league';
 
 async function readCache<T>(filename: string): Promise<T | null> {
   if (typeof window !== 'undefined' && window.electronAPI?.cache) {
-    return window.electronAPI.cache.read<T>(GAME_SLUG, filename);
+    try {
+      const data = await window.electronAPI.cache.read<T>(GAME_SLUG, filename);
+      if (!data) {
+        console.log(`[DDragon] Cache miss for: ${filename}`);
+      }
+      return data;
+    } catch (err) {
+      console.warn(`[DDragon] Cache read error for ${filename}:`, err);
+      return null;
+    }
   }
+  console.log('[DDragon] Cache API not available (not in Electron?)');
   return null;
 }
 
 async function writeCache(filename: string, data: unknown): Promise<void> {
   if (typeof window !== 'undefined' && window.electronAPI?.cache) {
-    await window.electronAPI.cache.write(GAME_SLUG, filename, data);
+    try {
+      await window.electronAPI.cache.write(GAME_SLUG, filename, data);
+      console.log(`[DDragon] Cached: ${filename}`);
+    } catch (err) {
+      console.warn(`[DDragon] Cache write error for ${filename}:`, err);
+    }
   }
 }
 
@@ -473,8 +488,12 @@ async function loadRunes(): Promise<void> {
 // ============================================
 
 export async function initDDragon(): Promise<void> {
-  if (initPromise) return initPromise;
+  if (initPromise) {
+    console.log('[DDragon] Init already in progress, returning existing promise');
+    return initPromise;
+  }
 
+  console.log('[DDragon] Starting initialization...');
   setLoading(true);
   setReady(false);
 
@@ -502,7 +521,11 @@ export async function initDDragon(): Promise<void> {
       setProgress(4, 'Loading runes...');
       await loadRunes();
 
+      console.log('[DDragon] Initialization complete');
       setReady(true);
+    } catch (err) {
+      console.error('[DDragon] Initialization failed:', err);
+      throw err;
     } finally {
       setLoading(false);
     }
