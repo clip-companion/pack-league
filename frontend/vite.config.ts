@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { companionPack } from '@companion/pack-runtime/vite';
+import { companionPack } from '@companion/pack-protocol/vite';
 import path from 'path';
 
 export default defineConfig({

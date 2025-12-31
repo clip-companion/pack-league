@@ -1,4 +1,4 @@
-import type { BaseMatch } from "./packs/types";
+import type { BaseMatch } from "@companion/pack-protocol";
 
 /**
  * League of Legends participant in a match
