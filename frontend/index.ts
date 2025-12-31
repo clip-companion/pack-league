@@ -5,7 +5,7 @@
  * for the multi-game architecture.
  */
 
-import type { GamePack, GamePackResources, ResourceState } from "@companion/pack-runtime";
+import type { GamePack, GamePackResources, ResourceState } from "@companion/pack-protocol";
 import type { LeagueMatch, LeagueLiveMatch } from "./types";
 import { MatchCard } from "./MatchCard";
 import { LiveMatchCard } from "./LiveMatchCard";
@@ -105,3 +105,4 @@ export { useDDragon, useDDragonReady } from "./hooks/useDDragon";
 // Re-export lib utilities
 export * from "./lib/ddragon";
 export * from "./lib/constants";
+export * from "./lib/live-client";

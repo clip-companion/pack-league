@@ -224,34 +224,47 @@ const KEYSTONE_ALIASES: Record<string, string> = {
 // Cache Utilities
 // ============================================
 
-// Game slug for cache namespacing
-const GAME_SLUG = 'league';
+import type { PackCacheAPI } from "@companion/pack-protocol";
+
+// Cache API reference - set by setPackCache() when context is available
+let packCache: PackCacheAPI | null = null;
+
+/**
+ * Set the pack cache API reference.
+ * Call this from a React component that has access to the pack context.
+ * This enables DDragon to cache data without directly accessing Electron.
+ */
+export function setPackCache(cache: PackCacheAPI): void {
+  packCache = cache;
+}
 
 async function readCache<T>(filename: string): Promise<T | null> {
-  if (typeof window !== 'undefined' && window.electronAPI?.cache) {
-    try {
-      const data = await window.electronAPI.cache.read<T>(GAME_SLUG, filename);
-      if (!data) {
-        console.log(`[DDragon] Cache miss for: ${filename}`);
-      }
-      return data;
-    } catch (err) {
-      console.warn(`[DDragon] Cache read error for ${filename}:`, err);
-      return null;
-    }
+  if (!packCache) {
+    console.log('[DDragon] Cache API not set (call setPackCache first)');
+    return null;
   }
-  console.log('[DDragon] Cache API not available (not in Electron?)');
-  return null;
+  try {
+    const data = await packCache.read<T>(filename);
+    if (!data) {
+      console.log(`[DDragon] Cache miss for: ${filename}`);
+    }
+    return data;
+  } catch (err) {
+    console.warn(`[DDragon] Cache read error for ${filename}:`, err);
+    return null;
+  }
 }
 
 async function writeCache(filename: string, data: unknown): Promise<void> {
-  if (typeof window !== 'undefined' && window.electronAPI?.cache) {
-    try {
-      await window.electronAPI.cache.write(GAME_SLUG, filename, data);
-      console.log(`[DDragon] Cached: ${filename}`);
-    } catch (err) {
-      console.warn(`[DDragon] Cache write error for ${filename}:`, err);
-    }
+  if (!packCache) {
+    console.warn('[DDragon] Cache API not set, skipping write');
+    return;
+  }
+  try {
+    await packCache.write(filename, data);
+    console.log(`[DDragon] Cached: ${filename}`);
+  } catch (err) {
+    console.warn(`[DDragon] Cache write error for ${filename}:`, err);
   }
 }
 
