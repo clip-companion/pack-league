@@ -4,7 +4,7 @@
   "name": "League of Legends",
 
   "detection": {
-    "process_names": ["LeagueOfLegends", "League of Legends"],
+    "process_names": ["LeagueOfLegends", "League of Legends", "LeagueClientUx", "LeagueClient"],
     "window_titles": ["League of Legends (TM)"]
   },
 
