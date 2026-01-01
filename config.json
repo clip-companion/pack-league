@@ -1,7 +1,9 @@
 {
+  "pack_id": "550e8400-e29b-41d4-a716-446655440000",
   "id": 1,
   "slug": "league",
   "name": "League of Legends",
+  "version": "0.1.0",
 
   "detection": {
     "process_names": ["LeagueOfLegends", "League of Legends", "LeagueClientUx", "LeagueClient"],
@@ -71,42 +73,69 @@
     ]
   },
 
-  "triggers": {
-    "champion_kill": {
+  "triggers": [
+    {
+      "event_key": "ChampionKill",
+      "display_name": "Champion Kill",
+      "category": "combat",
       "pre_secs": 10,
       "post_secs": 5
     },
-    "death": {
+    {
+      "event_key": "Death",
+      "display_name": "Death",
+      "category": "combat",
       "pre_secs": 5,
       "post_secs": 3
     },
-    "multikill": {
+    {
+      "event_key": "Multikill",
+      "display_name": "Multi Kill",
+      "category": "combat",
       "pre_secs": 15,
       "post_secs": 5
     },
-    "ace": {
+    {
+      "event_key": "Ace",
+      "display_name": "Ace",
+      "category": "combat",
       "pre_secs": 10,
       "post_secs": 5
     },
-    "dragon": {
+    {
+      "event_key": "DragonKill",
+      "display_name": "Dragon Kill",
+      "category": "objective",
       "pre_secs": 10,
       "post_secs": 5
     },
-    "baron": {
+    {
+      "event_key": "BaronKill",
+      "display_name": "Baron Kill",
+      "category": "objective",
       "pre_secs": 15,
       "post_secs": 5
     },
-    "herald": {
+    {
+      "event_key": "HeraldKill",
+      "display_name": "Herald Kill",
+      "category": "objective",
       "pre_secs": 10,
       "post_secs": 5
     },
-    "turret": {
+    {
+      "event_key": "TurretKilled",
+      "display_name": "Turret Destroyed",
+      "category": "objective",
       "pre_secs": 5,
       "post_secs": 3
     },
-    "inhibitor": {
+    {
+      "event_key": "InhibKilled",
+      "display_name": "Inhibitor Destroyed",
+      "category": "objective",
       "pre_secs": 5,
       "post_secs": 3
     }
-  }
+  ]
 }
