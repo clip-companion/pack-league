@@ -50,6 +50,8 @@ pub struct LeagueIntegration {
     last_event_id: i32,
     /// Current game mode context (set when session starts)
     game_mode_context: Option<GameModeContext>,
+    /// Cached active player name (set when session starts, used for is_player_involved)
+    active_player_name: Option<String>,
 }
 
 impl LeagueIntegration {
@@ -69,6 +71,7 @@ impl LeagueIntegration {
             session_context: None,
             last_event_id: -1,
             game_mode_context: None,
+            active_player_name: None,
         }
     }
 
@@ -180,10 +183,22 @@ impl LeagueIntegration {
             // Try to get events from the Live Client API
             match live_client.get_events().await {
                 Ok(game_events) => {
-                    // Get active player name to check involvement
-                    let player_name = match live_client.get_active_player().await {
-                        Ok(player) => player.summoner_name,
-                        Err(_) => String::new(),
+                    // Use cached player name, or try to fetch it if not cached
+                    let player_name = if let Some(ref name) = self.active_player_name {
+                        name.clone()
+                    } else {
+                        // Try to fetch and cache the player name
+                        match live_client.get_active_player().await {
+                            Ok(player) => {
+                                info!("Cached active player name: {}", player.summoner_name);
+                                self.active_player_name = Some(player.summoner_name.clone());
+                                player.summoner_name
+                            }
+                            Err(e) => {
+                                debug!("Failed to get active player: {}", e);
+                                String::new()
+                            }
+                        }
                     };
 
                     for event in game_events.events {
@@ -193,10 +208,12 @@ impl LeagueIntegration {
                         }
                         self.last_event_id = event.event_id;
 
-                        // Check if player is involved in this event
-                        let is_player_involved = event.killer_name.as_ref() == Some(&player_name)
+                        // Check if player is involved in this event (only if we have a valid player name)
+                        let is_player_involved = !player_name.is_empty() && (
+                            event.killer_name.as_ref() == Some(&player_name)
                             || event.victim_name.as_ref() == Some(&player_name)
-                            || event.assisters.contains(&player_name);
+                            || event.assisters.contains(&player_name)
+                        );
 
                         // Create game event using protocol types
                         let game_event = GameEvent::new(
@@ -266,6 +283,15 @@ impl LeagueIntegration {
         // Reset event tracking for new session
         self.last_event_id = -1;
         self.is_in_game = true;
+        self.active_player_name = None; // Reset for new session
+
+        // Try to pre-fetch active player name from Live Client API
+        if let Some(ref live_client) = self.live_client {
+            if let Ok(player) = live_client.get_active_player().await {
+                info!("Active player name: {}", player.summoner_name);
+                self.active_player_name = Some(player.summoner_name);
+            }
+        }
 
         // Capture pre-game rank for LP calculation
         self.finalizer.capture_pre_game_rank().await;
@@ -334,6 +360,7 @@ impl LeagueIntegration {
 
         // Reset session state
         self.session_context = None;
+        self.active_player_name = None;
         *self.last_live_match.write().await = None;
 
         // Convert to protocol MatchData
