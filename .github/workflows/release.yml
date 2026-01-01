@@ -158,3 +158,12 @@ jobs:
           name: v${{ needs.version.outputs.version }}
           files: release/*
           generate_release_notes: true
+
+      - name: Update packs-index
+        if: ${{ secrets.PACKS_INDEX_TOKEN }}
+        run: |
+          curl -X POST \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.PACKS_INDEX_TOKEN }}" \
+            https://api.github.com/repos/Lucidiac/packs-index/dispatches \
+            -d '{"event_type":"pack-released","client_payload":{"pack_id":"league","version":"${{ needs.version.outputs.version }}"}}'
