@@ -29,6 +29,9 @@
       "GameStart": { "category": "game", "pre_secs": 0, "post_secs": 3 },
       "GameEnd": { "category": "game", "pre_secs": 10, "post_secs": 5 },
       "MinionsSpawning": { "category": "game", "pre_secs": 0, "post_secs": 0 },
+      "TFT_GameEnd": { "category": "tft", "pre_secs": 30, "post_secs": 10 },
+      "TFT_TopFour": { "category": "tft", "pre_secs": 30, "post_secs": 10 },
+      "TFT_FirstPlace": { "category": "tft", "pre_secs": 60, "post_secs": 15 },
       "*": { "category": "other", "pre_secs": 10, "post_secs": 5 }
     }
   }

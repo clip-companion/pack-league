@@ -292,6 +292,34 @@ impl LcuClient {
             .map_err(|e| AppError::Other(format!("Failed to parse EOG stats: {}", e)))
     }
 
+    /// Get the current gameflow session (contains game mode, queue info, etc.)
+    pub async fn get_gameflow_session(&self) -> Result<GameflowSession> {
+        let url = format!(
+            "{}/lol-gameflow/v1/session",
+            self.connection.base_url()
+        );
+
+        let response = self
+            .client
+            .get(&url)
+            .header("Authorization", self.connection.auth_header())
+            .send()
+            .await
+            .map_err(|e| AppError::Other(format!("Failed to get gameflow session: {}", e)))?;
+
+        if !response.status().is_success() {
+            return Err(AppError::Other(format!(
+                "Gameflow session request failed: {}",
+                response.status()
+            )));
+        }
+
+        response
+            .json()
+            .await
+            .map_err(|e| AppError::Other(format!("Failed to parse gameflow session: {}", e)))
+    }
+
     /// Get current ranked stats for the summoner
     pub async fn get_ranked_stats(&self) -> Result<Vec<RankedEntry>> {
         let summoner = self.get_current_summoner().await?;
@@ -410,6 +438,70 @@ pub struct TeamPlayerStats {
     pub champion_name: String,
     pub summoner_name: String,
     pub stats: PlayerStats,
+}
+
+/// Gameflow session info from LCU
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GameflowSession {
+    pub phase: String,
+    #[serde(default)]
+    pub game_data: GameflowGameData,
+}
+
+/// Game data within gameflow session
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GameflowGameData {
+    #[serde(default)]
+    pub game_id: i64,
+    #[serde(default)]
+    pub game_mode: String,
+    #[serde(default)]
+    pub game_type: String,
+    #[serde(default)]
+    pub queue: GameflowQueue,
+}
+
+/// Queue info within gameflow session
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GameflowQueue {
+    #[serde(default)]
+    pub id: i32,
+    #[serde(default)]
+    pub name: String,
+    #[serde(default)]
+    pub game_mode: String,
+    #[serde(default, rename = "type")]
+    pub queue_type: String,
+    #[serde(default)]
+    pub is_ranked: bool,
+}
+
+impl GameflowSession {
+    /// Check if this is a TFT game
+    pub fn is_tft(&self) -> bool {
+        let mode = self.game_data.game_mode.to_uppercase();
+        let queue_mode = self.game_data.queue.game_mode.to_uppercase();
+        mode == "TFT" || queue_mode == "TFT"
+    }
+
+    /// Get the effective game mode (normalized)
+    pub fn game_mode(&self) -> &str {
+        if !self.game_data.game_mode.is_empty() {
+            &self.game_data.game_mode
+        } else if !self.game_data.queue.game_mode.is_empty() {
+            &self.game_data.queue.game_mode
+        } else {
+            "CLASSIC"
+        }
+    }
+
+    /// Check if this is a ranked game
+    pub fn is_ranked(&self) -> bool {
+        self.game_data.queue.is_ranked
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

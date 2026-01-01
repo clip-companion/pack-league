@@ -111,3 +111,65 @@ export interface LeagueLiveMatch {
   participants: LivePlayer[];
   isDead: boolean;
 }
+
+// ============================================================================
+// TFT Types
+// ============================================================================
+
+/**
+ * Game mode context from the backend
+ */
+export interface GameModeContext {
+  modeGuid: string;
+  modeKey: string;
+  displayName: string;
+  queueId: number;
+  queueName: string;
+  isRanked: boolean;
+}
+
+/**
+ * TFT match result (placement-based)
+ */
+export type TFTPlacement = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+
+/**
+ * TFT match data
+ */
+export interface TFTMatch extends BaseMatch {
+  gameId: 1;
+  summonerName: string;
+  placement: TFTPlacement;
+  result: MatchResult; // Still win/loss for top 4 vs bottom 4
+  gameMode: GameModeContext;
+  lpChange: number | null;
+  rank: string | null;
+  durationSecs: number;
+  badges: string[];
+}
+
+/**
+ * Union type for any match from this pack
+ */
+export type PackMatch = LeagueMatch | TFTMatch;
+
+/**
+ * Type guard to check if a match is a TFT match
+ */
+export function isTFTMatch(match: PackMatch): match is TFTMatch {
+  const gameMode = (match as any).gameMode;
+  if (typeof gameMode === "object" && gameMode !== null) {
+    return gameMode.modeKey === "TFT";
+  }
+  if (typeof gameMode === "string") {
+    return gameMode.toUpperCase() === "TFT";
+  }
+  return false;
+}
+
+/**
+ * Helper to check if placement is top 4 (considered a "win" in TFT)
+ */
+export function isTopFour(placement: TFTPlacement): boolean {
+  return placement <= 4;
+}

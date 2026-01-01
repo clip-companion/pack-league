@@ -19,13 +19,13 @@
       "league_game": {
         "type": "window",
         "match": {
-          "process": "LeagueOfLegends"
+          "title_contains": "League of Legends (TM) Client"
         }
       },
       "league_client": {
         "type": "window",
         "match": {
-          "title_contains": "League of Legends"
+          "process": "LeagueClientUx"
         }
       }
     },

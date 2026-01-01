@@ -135,6 +135,43 @@
       ],
       "default_pre_secs": 5,
       "default_post_secs": 3
+    },
+    {
+      "event_key": "TFT_GameEnd",
+      "display_name": "TFT Game End",
+      "description": "When a TFT game ends",
+      "category": "tft",
+      "game_mode": "TFT",
+      "metadata_fields": [
+        "Placement",
+        "QueueType"
+      ],
+      "default_pre_secs": 30,
+      "default_post_secs": 10
+    },
+    {
+      "event_key": "TFT_TopFour",
+      "display_name": "TFT Top 4",
+      "description": "Placed in top 4 (1st-4th)",
+      "category": "tft",
+      "game_mode": "TFT",
+      "metadata_fields": [
+        "Placement"
+      ],
+      "default_pre_secs": 30,
+      "default_post_secs": 10
+    },
+    {
+      "event_key": "TFT_FirstPlace",
+      "display_name": "TFT First Place",
+      "description": "Won the game (1st place)",
+      "category": "tft",
+      "game_mode": "TFT",
+      "metadata_fields": [
+        "Placement"
+      ],
+      "default_pre_secs": 60,
+      "default_post_secs": 15
     }
   ]
 }

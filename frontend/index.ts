@@ -7,8 +7,8 @@
 
 import type { GamePack, GamePackResources, ResourceState } from "@companion/pack-protocol";
 import type { LeagueMatch, LeagueLiveMatch } from "./types";
-import { MatchCard } from "./MatchCard";
-import { LiveMatchCard } from "./LiveMatchCard";
+import { SmartMatchCard as MatchCard } from "./SmartMatchCard";
+import { SmartLiveMatchCard as LiveMatchCard } from "./SmartLiveMatchCard";
 import { initDDragon, onStateChange as onDDragonStateChange } from "./lib/ddragon";
 import { DDragonStatus } from "./components/DDragonStatus";
 
@@ -95,8 +95,12 @@ export type { LeagueMatch, LeagueLiveMatch } from "./types";
 export * from "./types";
 
 // Re-export components
-export { MatchCard } from "./MatchCard";
-export { LiveMatchCard } from "./LiveMatchCard";
+export { MatchCard };
+export { LiveMatchCard };
+export { MatchCard as LeagueMatchCard } from "./MatchCard";
+export { TFTMatchCard } from "./TFTMatchCard";
+export { LiveMatchCard as LeagueLiveMatchCard } from "./LiveMatchCard";
+export { TFTLiveMatchCard } from "./TFTLiveMatchCard";
 export { DDragonStatus } from "./components/DDragonStatus";
 
 // Re-export hooks
