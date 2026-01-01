@@ -3,7 +3,7 @@
   "id": 1,
   "slug": "league",
   "name": "League of Legends",
-  "version": "0.1.0",
+  "version": "0.1.1",
 
   "detection": {
     "process_names": ["LeagueOfLegends", "League of Legends", "LeagueClientUx", "LeagueClient"],
