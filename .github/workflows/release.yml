@@ -2,13 +2,55 @@ name: Release
 
 on:
   push:
-    tags: ['v*']
+    branches: [main]
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  # Bump version and create tag
+  version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.bump.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Bump version
+        id: bump
+        run: |
+          # Get current version from config.json
+          CURRENT=$(grep '"version"' config.json | head -1 | sed 's/.*"version": *"\([^"]*\)".*/\1/')
+          echo "Current version: $CURRENT"
+
+          # Parse and increment patch
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+          PATCH=$((PATCH + 1))
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "New version: $NEW_VERSION"
+
+          # Update config.json
+          sed -i "s/\"version\": \"$CURRENT\"/\"version\": \"$NEW_VERSION\"/" config.json
+
+          # Configure git
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Commit and tag
+          git add config.json
+          git commit -m "chore: bump version to $NEW_VERSION [skip ci]"
+          git tag "v$NEW_VERSION"
+          git push && git push --tags
+
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
   build-daemon:
+    needs: version
     strategy:
       matrix:
         include:
@@ -55,6 +97,7 @@ jobs:
           path: ${{ matrix.artifact }}
 
   build-frontend:
+    needs: version
     runs-on: ubuntu-latest
 
     steps:
@@ -86,7 +129,7 @@ jobs:
           path: frontend/dist/frontend.js
 
   release:
-    needs: [build-daemon, build-frontend]
+    needs: [version, build-daemon, build-frontend]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -111,5 +154,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: v${{ needs.version.outputs.version }}
+          name: v${{ needs.version.outputs.version }}
           files: release/*
           generate_release_notes: true
