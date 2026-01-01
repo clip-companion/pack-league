@@ -18,7 +18,7 @@ import {
   normalizeKeystoneName,
   normalizeRuneTreeName,
 } from "./lib/ddragon";
-import { cardHover, springGentle } from "./lib/animations";
+import { cardHover } from "./lib/animations";
 import { GameIcon } from "./components/GameIcon";
 import { useDDragonReady } from "./hooks/useDDragon";
 import type { LeagueMatch } from "./types";
@@ -75,7 +75,6 @@ export function MatchCard({ match, isSelected, onClick }: MatchCardProps) {
       initial="initial"
       whileHover="hover"
       whileTap="tap"
-      transition={springGentle}
       className={cn(
         "w-full text-left rounded-lg border overflow-hidden",
         "hover:border-primary/30 transition-colors",

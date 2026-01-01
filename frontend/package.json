@@ -8,7 +8,7 @@
     "dev": "vite build --watch"
   },
   "dependencies": {
-    "@companion/pack-protocol": "github:Lucidiac/companion-pack-protocol",
+    "@companion/pack-protocol": "file:../../companion-pack-protocol",
     "clsx": "^2.1.0",
     "framer-motion": "^11.0.0",
     "lucide-react": "^0.460.0",
@@ -17,6 +17,7 @@
     "tailwind-merge": "^2.2.0"
   },
   "devDependencies": {
+    "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.4",
