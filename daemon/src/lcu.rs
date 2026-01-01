@@ -73,15 +73,24 @@ impl LcuConnection {
     /// Extract the install directory from the process command line.
     /// Looks for --install-directory= argument.
     fn extract_install_directory(cmdline: &str) -> Result<PathBuf> {
-        // Match --install-directory=<path> (path may be quoted or unquoted)
-        let re = Regex::new(r#"--install-directory[=\s]+["']?([^"'\s]+)["']?"#)
+        // Match --install-directory=<path>
+        // Path may contain spaces (common on macOS), so match until next -- flag or end
+        let re = Regex::new(r#"--install-directory=(.+?)(?:\s+--|$)"#)
             .map_err(|e| AppError::Other(format!("Regex error: {}", e)))?;
 
         if let Some(caps) = re.captures(cmdline) {
-            if let Some(path) = caps.get(1) {
-                let install_dir = PathBuf::from(path.as_str());
-                debug!("Found League install directory: {:?}", install_dir);
-                return Ok(install_dir);
+            if let Some(path_match) = caps.get(1) {
+                // Trim any trailing whitespace from the captured path
+                let path_str = path_match.as_str().trim();
+                let install_dir = PathBuf::from(path_str);
+
+                // Verify the path exists and has a lockfile
+                if install_dir.join("lockfile").exists() {
+                    debug!("Found League install directory: {:?}", install_dir);
+                    return Ok(install_dir);
+                } else {
+                    debug!("Install directory {:?} doesn't have lockfile, trying fallback", install_dir);
+                }
             }
         }
 
