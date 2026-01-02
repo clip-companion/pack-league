@@ -14,7 +14,7 @@ path = "src/lib.rs"
 
 [dependencies]
 # Shared protocol types from companion app
-companion-pack-protocol = { git = "https://github.com/Lucidiac/companion-pack-protocol.git" }
+companion-pack-protocol = { git = "https://github.com/clip-companion/companion-pack-protocol.git" }
 
 # Async runtime
 tokio = { version = "1", features = ["full"] }
