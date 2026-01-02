@@ -164,5 +164,5 @@ jobs:
           curl -X POST \
             -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: token ${{ secrets.PACKS_INDEX_TOKEN }}" \
-            https://api.github.com/repos/Lucidiac/packs-index/dispatches \
+            https://api.github.com/repos/clip-companion/packs-index/dispatches \
             -d '{"event_type":"pack-released","client_payload":{"pack_id":"league","version":"${{ needs.version.outputs.version }}"}}'
