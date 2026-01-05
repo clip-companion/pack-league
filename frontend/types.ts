@@ -58,15 +58,13 @@ export interface LivePlayer {
 export type MatchResult = "win" | "loss" | "remake";
 
 /**
- * League of Legends match data
+ * League of Legends match details (game-specific fields)
+ * Stored in the `details` field of BaseMatch
  */
-export interface LeagueMatch extends BaseMatch {
-  // LeagueMatch gameId is always 1
-  gameId: 1;
+export interface LeagueMatchDetails {
   summonerName: string;
   champion: string;
   championLevel: number;
-  result: MatchResult;
   kills: number;
   deaths: number;
   assists: number;
@@ -86,6 +84,15 @@ export interface LeagueMatch extends BaseMatch {
   trinket: string | null;
   participants: Participant[];
   badges: string[];
+}
+
+/**
+ * League of Legends match data
+ * Extends BaseMatch with League-specific details
+ */
+export interface LeagueMatch extends BaseMatch<LeagueMatchDetails> {
+  // LeagueMatch gameId is always 1
+  gameId: 1;
 }
 
 /**
@@ -134,18 +141,24 @@ export interface GameModeContext {
 export type TFTPlacement = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 /**
- * TFT match data
+ * TFT match details (game-specific fields)
+ * Stored in the `details` field of BaseMatch
  */
-export interface TFTMatch extends BaseMatch {
-  gameId: 1;
+export interface TFTMatchDetails {
   summonerName: string;
   placement: TFTPlacement;
-  result: MatchResult; // Still win/loss for top 4 vs bottom 4
   gameMode: GameModeContext;
   lpChange: number | null;
   rank: string | null;
-  durationSecs: number;
   badges: string[];
+}
+
+/**
+ * TFT match data
+ * Extends BaseMatch with TFT-specific details
+ */
+export interface TFTMatch extends BaseMatch<TFTMatchDetails> {
+  gameId: 1;
 }
 
 /**
@@ -157,9 +170,9 @@ export type PackMatch = LeagueMatch | TFTMatch;
  * Type guard to check if a match is a TFT match
  */
 export function isTFTMatch(match: PackMatch): match is TFTMatch {
-  const gameMode = (match as any).gameMode;
+  const gameMode = match.details?.gameMode;
   if (typeof gameMode === "object" && gameMode !== null) {
-    return gameMode.modeKey === "TFT";
+    return (gameMode as GameModeContext).modeKey === "TFT";
   }
   if (typeof gameMode === "string") {
     return gameMode.toUpperCase() === "TFT";
