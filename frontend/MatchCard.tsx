@@ -34,9 +34,33 @@ export function MatchCard({ match, isSelected, onClick }: MatchCardProps) {
   // Subscribe to DDragon ready state to re-render when icons become available
   const ddReady = useDDragonReady();
 
+  // Destructure from match.details (game-specific fields)
+  const {
+    summonerName,
+    champion,
+    championLevel,
+    kills,
+    deaths,
+    assists,
+    cs,
+    csPerMin,
+    killParticipation,
+    gameMode,
+    lpChange: lpChangeValue,
+    rank,
+    summonerSpell1,
+    summonerSpell2,
+    keystoneRune,
+    secondaryTree,
+    items,
+    trinket,
+    participants,
+    badges,
+  } = match.details;
+
   const isWin = match.result === "win";
-  const kdaLabel = getKDALabel(match.kills, match.deaths, match.assists);
-  const lpChange = formatLPChange(match.lpChange);
+  const kdaLabel = getKDALabel(kills, deaths, assists);
+  const lpChange = formatLPChange(lpChangeValue);
 
   // Show loading skeleton while DDragon initializes
   if (!ddReady) {
@@ -60,13 +84,13 @@ export function MatchCard({ match, isSelected, onClick }: MatchCardProps) {
   }
 
   // Normalize names to handle both IDs and names (backwards compatibility)
-  const spell1Name = normalizeSpellName(match.summonerSpell1);
-  const spell2Name = normalizeSpellName(match.summonerSpell2);
-  const keystoneName = normalizeKeystoneName(match.keystoneRune);
-  const secondaryTreeName = normalizeRuneTreeName(match.secondaryTree);
+  const spell1Name = normalizeSpellName(summonerSpell1);
+  const spell2Name = normalizeSpellName(summonerSpell2);
+  const keystoneName = normalizeKeystoneName(keystoneRune);
+  const secondaryTreeName = normalizeRuneTreeName(secondaryTree);
 
-  const blueTeam = match.participants.filter((p) => p.team === "blue");
-  const redTeam = match.participants.filter((p) => p.team === "red");
+  const blueTeam = participants.filter((p) => p.team === "blue");
+  const redTeam = participants.filter((p) => p.team === "red");
 
   return (
     <motion.button
@@ -89,7 +113,7 @@ export function MatchCard({ match, isSelected, onClick }: MatchCardProps) {
         {/* Game info column - content centered vertically */}
         <div className="w-24 shrink-0 p-2 flex flex-col justify-center overflow-hidden">
           <div className="text-xs font-medium text-muted-foreground truncate">
-            {match.gameMode}
+            {gameMode}
           </div>
           <div className="text-xs text-muted-foreground">
             {formatTimeAgo(match.playedAt)}
@@ -107,7 +131,7 @@ export function MatchCard({ match, isSelected, onClick }: MatchCardProps) {
               <span
                 className={cn(
                   "text-xs font-medium",
-                  match.lpChange && match.lpChange > 0
+                  lpChangeValue && lpChangeValue > 0
                     ? "text-win"
                     : "text-loss"
                 )}
@@ -140,8 +164,8 @@ export function MatchCard({ match, isSelected, onClick }: MatchCardProps) {
                   style={{ borderRadius: '50%' }}
                 >
                   <GameIcon
-                    src={getChampionIconUrl(match.champion)}
-                    alt={match.champion}
+                    src={getChampionIconUrl(champion)}
+                    alt={champion}
                     size={48}
                     shape="circle"
                     className="scale-110"
@@ -149,7 +173,7 @@ export function MatchCard({ match, isSelected, onClick }: MatchCardProps) {
                 </div>
                 {/* Level badge */}
                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-background border rounded px-1 text-[9px] font-bold">
-                  {match.championLevel}
+                  {championLevel}
                 </div>
               </div>
 
@@ -190,14 +214,14 @@ export function MatchCard({ match, isSelected, onClick }: MatchCardProps) {
             {/* KDA */}
             <div className="shrink-0 text-center">
               <div className="text-base font-bold tracking-tight">
-                <span className="text-foreground">{match.kills}</span>
+                <span className="text-foreground">{kills}</span>
                 <span className="text-muted-foreground/60"> / </span>
-                <span className="text-loss">{match.deaths}</span>
+                <span className="text-loss">{deaths}</span>
                 <span className="text-muted-foreground/60"> / </span>
-                <span className="text-foreground">{match.assists}</span>
+                <span className="text-foreground">{assists}</span>
               </div>
               <div className="text-[10px] text-muted-foreground">
-                {formatKDARatio(match.kills, match.deaths, match.assists)}:1 KDA
+                {formatKDARatio(kills, deaths, assists)}:1 KDA
               </div>
               {kdaLabel && (
                 <div
@@ -219,7 +243,7 @@ export function MatchCard({ match, isSelected, onClick }: MatchCardProps) {
             <div className="flex items-center mt-1">
             <div className="flex gap-0.5">
               {[0, 1, 2, 3, 4, 5].map((i) => {
-                const itemName = match.items[i] || "";
+                const itemName = items[i] || "";
                 const hasItem = itemName.length > 0;
                 const itemUrl = hasItem ? getItemIconUrl(itemName) : null;
                 return hasItem ? (
@@ -239,13 +263,13 @@ export function MatchCard({ match, isSelected, onClick }: MatchCardProps) {
                 );
               })}
               {/* Trinket */}
-              {match.trinket ? (
+              {trinket ? (
                 <GameIcon
-                  src={getItemIconUrl(match.trinket)}
-                  alt={match.trinket}
+                  src={getItemIconUrl(trinket)}
+                  alt={trinket}
                   size={20}
                   shape="circle"
-                  title={match.trinket}
+                  title={trinket}
                 />
               ) : (
                 <div
@@ -263,23 +287,23 @@ export function MatchCard({ match, isSelected, onClick }: MatchCardProps) {
           <div className="text-muted-foreground">
             P/Kill{" "}
             <span className="text-foreground font-medium">
-              {match.killParticipation}%
+              {killParticipation}%
             </span>
           </div>
           <div className="text-muted-foreground">
             CS{" "}
-            <span className="text-foreground font-medium">{match.cs}</span>
+            <span className="text-foreground font-medium">{cs}</span>
             <span className="text-muted-foreground/70">
-              {" "}({match.csPerMin.toFixed(1)})
+              {" "}({csPerMin.toFixed(1)})
             </span>
           </div>
-          {match.rank && (
-            <div className="text-primary font-medium">{match.rank}</div>
+          {rank && (
+            <div className="text-primary font-medium">{rank}</div>
           )}
           {/* Badges */}
-          {match.badges.length > 0 && (
+          {badges.length > 0 && (
             <div className="flex flex-col gap-0.5 pt-1">
-              {match.badges.slice(0, 2).map((badge) => (
+              {badges.slice(0, 2).map((badge) => (
                 <span
                   key={badge}
                   className={cn(
@@ -317,7 +341,7 @@ export function MatchCard({ match, isSelected, onClick }: MatchCardProps) {
                 key={i}
                 className={cn(
                   "flex items-center gap-1",
-                  p.summonerName === match.summonerName && "bg-primary/10 rounded-sm px-1 -mx-1"
+                  p.summonerName === summonerName && "bg-primary/10 rounded-sm px-1 -mx-1"
                 )}
               >
                 <GameIcon
@@ -325,13 +349,13 @@ export function MatchCard({ match, isSelected, onClick }: MatchCardProps) {
                   alt={p.champion}
                   size={16}
                   className={cn(
-                    p.summonerName === match.summonerName && "ring-1 ring-primary"
+                    p.summonerName === summonerName && "ring-1 ring-primary"
                   )}
                 />
                 <span
                   className={cn(
                     "text-[10px] leading-none",
-                    p.summonerName === match.summonerName
+                    p.summonerName === summonerName
                       ? "text-foreground font-medium"
                       : "text-muted-foreground"
                   )}
@@ -349,7 +373,7 @@ export function MatchCard({ match, isSelected, onClick }: MatchCardProps) {
                 key={i}
                 className={cn(
                   "flex items-center gap-1",
-                  p.summonerName === match.summonerName && "bg-primary/10 rounded-sm px-1 -mx-1"
+                  p.summonerName === summonerName && "bg-primary/10 rounded-sm px-1 -mx-1"
                 )}
               >
                 <GameIcon
@@ -357,13 +381,13 @@ export function MatchCard({ match, isSelected, onClick }: MatchCardProps) {
                   alt={p.champion}
                   size={16}
                   className={cn(
-                    p.summonerName === match.summonerName && "ring-1 ring-primary"
+                    p.summonerName === summonerName && "ring-1 ring-primary"
                   )}
                 />
                 <span
                   className={cn(
                     "text-[10px] leading-none",
-                    p.summonerName === match.summonerName
+                    p.summonerName === summonerName
                       ? "text-foreground font-medium"
                       : "text-muted-foreground"
                   )}

@@ -49,11 +49,20 @@ function getPlacementBgClass(placement: TFTPlacement): string {
 }
 
 export function TFTMatchCard({ match, isSelected, onClick }: TFTMatchCardProps) {
-  const isTop4 = isTopFour(match.placement);
-  const lpChange = formatLPChange(match.lpChange);
-  const placementDisplay = getPlacementDisplay(match.placement);
-  const queueName = typeof match.gameMode === "object"
-    ? match.gameMode.queueName || "TFT"
+  // Destructure from match.details (game-specific fields)
+  const {
+    placement,
+    lpChange: lpChangeValue,
+    gameMode,
+    rank,
+    badges,
+  } = match.details;
+
+  const isTop4 = isTopFour(placement);
+  const lpChange = formatLPChange(lpChangeValue);
+  const placementDisplay = getPlacementDisplay(placement);
+  const queueName = typeof gameMode === "object"
+    ? gameMode.queueName || "TFT"
     : "TFT";
 
   return (
@@ -72,7 +81,7 @@ export function TFTMatchCard({ match, isSelected, onClick }: TFTMatchCardProps) 
     >
       <div className="flex">
         {/* Placement indicator bar - left side */}
-        <div className={cn("w-1 shrink-0", getPlacementBgClass(match.placement))} />
+        <div className={cn("w-1 shrink-0", getPlacementBgClass(placement))} />
 
         {/* Game info column */}
         <div className="w-28 shrink-0 p-3 flex flex-col justify-center overflow-hidden">
@@ -97,7 +106,7 @@ export function TFTMatchCard({ match, isSelected, onClick }: TFTMatchCardProps) 
           <div className="text-center">
             <div className={cn(
               "text-4xl font-bold tracking-tight",
-              getPlacementColorClass(match.placement)
+              getPlacementColorClass(placement)
             )}>
               {placementDisplay}
             </div>
@@ -107,7 +116,7 @@ export function TFTMatchCard({ match, isSelected, onClick }: TFTMatchCardProps) 
             {lpChange && (
               <div className={cn(
                 "text-sm font-medium mt-1",
-                match.lpChange && match.lpChange > 0 ? "text-win" : "text-loss"
+                lpChangeValue && lpChangeValue > 0 ? "text-win" : "text-loss"
               )}>
                 {lpChange}
               </div>
@@ -117,15 +126,15 @@ export function TFTMatchCard({ match, isSelected, onClick }: TFTMatchCardProps) 
 
         {/* Rank info - right side */}
         <div className="shrink-0 py-3 px-4 flex flex-col justify-center items-end border-l border-border/30">
-          {match.rank && (
+          {rank && (
             <div className="text-sm font-medium text-primary">
-              {match.rank}
+              {rank}
             </div>
           )}
           {/* Badges */}
-          {match.badges && match.badges.length > 0 && (
+          {badges && badges.length > 0 && (
             <div className="flex flex-col gap-1 mt-2">
-              {match.badges.slice(0, 2).map((badge) => (
+              {badges.slice(0, 2).map((badge) => (
                 <span
                   key={badge}
                   className={cn(
