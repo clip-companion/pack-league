@@ -4,6 +4,87 @@
   "slug": "league",
   "name": "League of Legends",
   "version": "0.1.7",
+  "schema_version": 1,
+
+  "subpacks": {
+    "0": {
+      "name": "League of Legends",
+      "slug": "league",
+      "schema": {
+        "match_details": {
+          "columns": [
+            { "name": "match_id", "type": "TEXT PRIMARY KEY REFERENCES matches(id) ON DELETE CASCADE" },
+            { "name": "summoner_name", "type": "TEXT NOT NULL" },
+            { "name": "puuid", "type": "TEXT" },
+            { "name": "game_id", "type": "INTEGER" },
+            { "name": "champion", "type": "TEXT NOT NULL", "filterable": true },
+            { "name": "champion_level", "type": "INTEGER DEFAULT 1" },
+            { "name": "kills", "type": "INTEGER DEFAULT 0", "filterable": true },
+            { "name": "deaths", "type": "INTEGER DEFAULT 0", "filterable": true },
+            { "name": "assists", "type": "INTEGER DEFAULT 0", "filterable": true },
+            { "name": "cs", "type": "INTEGER DEFAULT 0", "filterable": true },
+            { "name": "cs_per_min", "type": "REAL DEFAULT 0.0" },
+            { "name": "vision_score", "type": "INTEGER DEFAULT 0" },
+            { "name": "kill_participation", "type": "INTEGER DEFAULT 0" },
+            { "name": "damage_dealt", "type": "INTEGER DEFAULT 0", "filterable": true },
+            { "name": "game_mode", "type": "TEXT NOT NULL", "filterable": true },
+            { "name": "queue_type", "type": "TEXT", "filterable": true },
+            { "name": "lp_change", "type": "INTEGER" },
+            { "name": "rank", "type": "TEXT", "filterable": true },
+            { "name": "team", "type": "TEXT" },
+            { "name": "summoner_spell1", "type": "TEXT" },
+            { "name": "summoner_spell2", "type": "TEXT" },
+            { "name": "keystone_rune", "type": "TEXT" },
+            { "name": "secondary_tree", "type": "TEXT" },
+            { "name": "items_json", "type": "TEXT" },
+            { "name": "trinket", "type": "TEXT" },
+            { "name": "participants_json", "type": "TEXT" },
+            { "name": "badges_json", "type": "TEXT" }
+          ],
+          "indexes": [
+            { "columns": ["champion"] },
+            { "columns": ["game_mode"] },
+            { "columns": ["rank"] }
+          ]
+        }
+      }
+    },
+    "1": {
+      "name": "Teamfight Tactics",
+      "slug": "tft",
+      "schema": {
+        "match_details": {
+          "columns": [
+            { "name": "match_id", "type": "TEXT PRIMARY KEY REFERENCES matches(id) ON DELETE CASCADE" },
+            { "name": "summoner_name", "type": "TEXT NOT NULL" },
+            { "name": "puuid", "type": "TEXT" },
+            { "name": "game_id", "type": "INTEGER" },
+            { "name": "placement", "type": "INTEGER NOT NULL", "filterable": true },
+            { "name": "level", "type": "INTEGER DEFAULT 1" },
+            { "name": "players_eliminated", "type": "INTEGER DEFAULT 0" },
+            { "name": "total_damage_to_players", "type": "INTEGER DEFAULT 0" },
+            { "name": "time_eliminated_secs", "type": "INTEGER" },
+            { "name": "gold_left", "type": "INTEGER DEFAULT 0" },
+            { "name": "game_mode", "type": "TEXT NOT NULL", "filterable": true },
+            { "name": "queue_type", "type": "TEXT", "filterable": true },
+            { "name": "lp_change", "type": "INTEGER" },
+            { "name": "rank", "type": "TEXT", "filterable": true },
+            { "name": "set_name", "type": "TEXT" },
+            { "name": "set_number", "type": "INTEGER" },
+            { "name": "augments_json", "type": "TEXT" },
+            { "name": "units_json", "type": "TEXT" },
+            { "name": "traits_json", "type": "TEXT" },
+            { "name": "companion_json", "type": "TEXT" }
+          ],
+          "indexes": [
+            { "columns": ["placement"] },
+            { "columns": ["game_mode"] },
+            { "columns": ["rank"] }
+          ]
+        }
+      }
+    }
+  },
 
   "detection": {
     "process_names": ["LeagueOfLegends", "League of Legends", "LeagueClientUx", "LeagueClient"],

@@ -160,7 +160,7 @@ dependencies = [
 [[package]]
 name = "companion-pack-protocol"
 version = "0.1.0"
-source = "git+https://github.com/clip-companion/companion-pack-protocol.git#04ecff300df50ff5f3991539706d1761be3516e2"
+source = "git+https://github.com/clip-companion/companion-pack-protocol.git#613874339835ea3f235161b98adf385e70794517"
 dependencies = [
  "serde",
  "serde_json",

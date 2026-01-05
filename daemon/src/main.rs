@@ -6,7 +6,8 @@
 use std::io;
 
 use companion_pack_protocol::{
-    run_gamepack, GameEvent, GameStatus, GamepackHandler, GamepackResult, InitResponse, MatchData,
+    run_gamepack, GameEvent, GameStatus, GamepackHandler, GamepackResult, InitResponse,
+    IsMatchInProgressResponse, MatchData,
 };
 use tokio::runtime::Runtime;
 use tracing::info;
@@ -90,6 +91,36 @@ impl GamepackHandler for LeagueHandler {
 
     fn shutdown(&mut self) {
         info!("League pack shutting down");
+    }
+
+    fn is_match_in_progress(
+        &self,
+        subpack: u8,
+        external_match_id: &str,
+    ) -> IsMatchInProgressResponse {
+        // Check if the game is actually still running
+        let is_running = self.runtime.block_on(async {
+            self.integration.detect_running().await
+        });
+
+        if !is_running {
+            info!(
+                "Match {} (subpack {}) not in progress - game not running",
+                external_match_id, subpack
+            );
+            // Game isn't running, so the match is definitely not in progress
+            // We could try to fetch final stats from Riot API here, but for now
+            // just return that it ended
+            IsMatchInProgressResponse::ended()
+        } else {
+            // Game is running - the match may still be in progress
+            // The integration's is_in_game would be more accurate but requires state
+            info!(
+                "Match {} (subpack {}) may still be in progress - game running",
+                external_match_id, subpack
+            );
+            IsMatchInProgressResponse::still_playing()
+        }
     }
 }
 

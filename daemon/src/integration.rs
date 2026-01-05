@@ -5,6 +5,7 @@
 
 use chrono::Utc;
 use serde_json::{json, Value};
+use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use tracing::{debug, info, warn};
@@ -16,8 +17,12 @@ use crate::protocol::{
 use crate::types::GameModeContext;
 use crate::{GameflowPhase, LiveClientApi, LiveMatch, RankedEntry, LEAGUE_GAME_ID, LEAGUE_SLUG};
 
-// Use shared GameEvent from the protocol crate
-use companion_pack_protocol::GameEvent;
+// Use shared types from the protocol crate
+use companion_pack_protocol::{emit_match_data, GameEvent, MatchDataMessage};
+
+/// Subpack indices for League pack
+pub const SUBPACK_LEAGUE: u8 = 0;
+pub const SUBPACK_TFT: u8 = 1;
 
 /// League of Legends game integration.
 ///
@@ -52,6 +57,12 @@ pub struct LeagueIntegration {
     game_mode_context: Option<GameModeContext>,
     /// Cached active player name (set when session starts, used for is_player_involved)
     active_player_name: Option<String>,
+    /// Current match's external ID (game_id from LCU)
+    external_match_id: Option<String>,
+    /// Current subpack index (0 for League, 1 for TFT)
+    current_subpack: u8,
+    /// Last emitted stats (for delta detection)
+    last_emitted_stats: Option<HashMap<String, serde_json::Value>>,
 }
 
 impl LeagueIntegration {
@@ -72,12 +83,28 @@ impl LeagueIntegration {
             last_event_id: -1,
             game_mode_context: None,
             active_player_name: None,
+            external_match_id: None,
+            current_subpack: SUBPACK_LEAGUE,
+            last_emitted_stats: None,
         }
     }
 
     /// Try to get the LCU client connection
     fn try_lcu_client(&self) -> Option<crate::LcuClient> {
         crate::LcuClient::new().ok()
+    }
+
+    /// Get current subpack index based on game mode
+    pub fn current_subpack(&self) -> u8 {
+        self.current_subpack
+    }
+
+    /// Check if currently playing TFT
+    pub fn is_tft(&self) -> bool {
+        self.game_mode_context
+            .as_ref()
+            .map(|c| c.is_tft())
+            .unwrap_or(false)
     }
 
     /// Detect if League client is running
@@ -283,7 +310,10 @@ impl LeagueIntegration {
         // Reset event tracking for new session
         self.last_event_id = -1;
         self.is_in_game = true;
-        self.active_player_name = None; // Reset for new session
+        self.active_player_name = None;
+        self.external_match_id = None;
+        self.current_subpack = SUBPACK_LEAGUE;
+        self.last_emitted_stats = None;
 
         // Try to pre-fetch active player name from Live Client API
         if let Some(ref live_client) = self.live_client {
@@ -303,6 +333,13 @@ impl LeagueIntegration {
                 let game_mode = session.game_mode();
                 let queue = &session.game_data.queue;
 
+                // Store external match ID from game data
+                let game_id = session.game_data.game_id;
+                if game_id != 0 {
+                    self.external_match_id = Some(game_id.to_string());
+                    info!("Match external ID: {}", game_id);
+                }
+
                 self.game_mode_context = Some(GameModeContext::from_session(
                     game_mode,
                     queue.id,
@@ -310,11 +347,16 @@ impl LeagueIntegration {
                     queue.is_ranked,
                 ));
 
+                // Determine subpack based on game mode
+                let is_tft = session.is_tft();
+                self.current_subpack = if is_tft { SUBPACK_TFT } else { SUBPACK_LEAGUE };
+
                 info!(
-                    "Game mode detected: {} (queue: {}, ranked: {})",
+                    "Game mode detected: {} (queue: {}, ranked: {}, subpack: {})",
                     self.game_mode_context.as_ref().map(|c| c.display_name.as_str()).unwrap_or("unknown"),
                     queue.name,
-                    queue.is_ranked
+                    queue.is_ranked,
+                    self.current_subpack
                 );
             }
 
@@ -338,6 +380,8 @@ impl LeagueIntegration {
         let context = SessionContext::new(json!({
             "pre_game_rank": self.pre_game_rank,
             "game_mode": self.game_mode_context,
+            "subpack": self.current_subpack,
+            "external_match_id": self.external_match_id,
         }));
 
         self.session_context = Some(context.clone());
@@ -355,15 +399,40 @@ impl LeagueIntegration {
         // Get post-game data from finalizer
         let match_data = self.finalizer.finalize_game(last_match).await.ok().flatten();
 
-        // Capture game mode before resetting
+        // Capture values before resetting
         let game_mode_ctx = self.game_mode_context.take();
+        let subpack = self.current_subpack;
+        let external_match_id = self.external_match_id.take();
 
         // Reset session state
         self.session_context = None;
         self.active_player_name = None;
+        self.last_emitted_stats = None;
         *self.last_live_match.write().await = None;
 
-        // Convert to protocol MatchData
+        // If we have an external match ID, emit SetComplete to the daemon
+        if let Some(ref external_id) = external_match_id {
+            // Build final stats from the match data
+            let final_stats = match_data.as_ref().map(|data| {
+                self.build_stats_map(data, &game_mode_ctx)
+            });
+
+            // Emit SetComplete message
+            let summary_source = if match_data.is_some() { "api" } else { "live_fallback" };
+            emit_match_data(MatchDataMessage::SetComplete {
+                subpack,
+                external_match_id: external_id.clone(),
+                summary_source: summary_source.to_string(),
+                final_stats,
+            });
+
+            info!(
+                "Emitted SetComplete for match {} (subpack: {}, source: {})",
+                external_id, subpack, summary_source
+            );
+        }
+
+        // Convert to protocol MatchData (for backwards compat)
         match_data.map(|data| {
             let result = match data.result {
                 crate::MatchResult::Win => MatchResult::Win,
@@ -388,6 +457,56 @@ impl LeagueIntegration {
                 details,
             }
         })
+    }
+
+    /// Build a stats HashMap from match data for the current subpack
+    fn build_stats_map(
+        &self,
+        data: &crate::CreateMatch,
+        game_mode_ctx: &Option<GameModeContext>,
+    ) -> HashMap<String, serde_json::Value> {
+        let mut stats = HashMap::new();
+
+        // Common fields for both League and TFT
+        stats.insert("summoner_name".to_string(), json!(data.summoner_name));
+        stats.insert("game_mode".to_string(), json!(data.game_mode));
+        stats.insert("game_id".to_string(), json!(data.game_id));
+
+        if self.current_subpack == SUBPACK_LEAGUE {
+            // League-specific stats
+            stats.insert("champion".to_string(), json!(data.champion));
+            stats.insert("champion_level".to_string(), json!(data.champion_level));
+            stats.insert("kills".to_string(), json!(data.kills));
+            stats.insert("deaths".to_string(), json!(data.deaths));
+            stats.insert("assists".to_string(), json!(data.assists));
+            stats.insert("cs".to_string(), json!(data.cs));
+            stats.insert("cs_per_min".to_string(), json!(data.cs_per_min));
+            stats.insert("vision_score".to_string(), json!(data.vision_score));
+            stats.insert("kill_participation".to_string(), json!(data.kill_participation));
+            stats.insert("damage_dealt".to_string(), json!(data.damage_dealt));
+            stats.insert("summoner_spell1".to_string(), json!(data.summoner_spell1));
+            stats.insert("summoner_spell2".to_string(), json!(data.summoner_spell2));
+            stats.insert("keystone_rune".to_string(), json!(data.keystone_rune));
+            stats.insert("secondary_tree".to_string(), json!(data.secondary_tree));
+            stats.insert("items_json".to_string(), json!(data.items));
+            stats.insert("trinket".to_string(), json!(data.trinket));
+            stats.insert("participants_json".to_string(), json!(data.participants));
+            stats.insert("badges_json".to_string(), json!(data.badges));
+        }
+        // TFT stats would be different - to be implemented when TFT support is added
+
+        if let Some(ref mode_ctx) = game_mode_ctx {
+            stats.insert("queue_type".to_string(), json!(mode_ctx.queue_name));
+        }
+
+        if let Some(lp) = data.lp_change {
+            stats.insert("lp_change".to_string(), json!(lp));
+        }
+        if let Some(ref rank) = data.rank {
+            stats.insert("rank".to_string(), json!(rank));
+        }
+
+        stats
     }
 
     /// Add a game event
