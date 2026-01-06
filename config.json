@@ -3,7 +3,7 @@
   "id": 1,
   "slug": "league",
   "name": "League of Legends",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "schema_version": 1,
 
   "subpacks": {
