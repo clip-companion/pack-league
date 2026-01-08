@@ -5,10 +5,13 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "dev": "vite build --watch"
+    "dev": "vite build --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ci": "vitest run ci.test.ts"
   },
   "dependencies": {
-    "@companion/pack-protocol": "file:../../companion-pack-protocol",
+    "@companion/pack-protocol": "github:clip-companion/companion-pack-protocol",
     "clsx": "^2.1.0",
     "framer-motion": "^11.0.0",
     "lucide-react": "^0.460.0",
@@ -22,7 +25,8 @@
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.4",
     "typescript": "^5.7.2",
-    "vite": "^6.0.5"
+    "vite": "^6.0.5",
+    "vitest": "^2.1.0"
   },
   "peerDependencies": {
     "react": "^19.0.0",

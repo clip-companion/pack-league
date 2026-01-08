@@ -14,9 +14,7 @@ path = "src/lib.rs"
 
 [dependencies]
 # Shared protocol types from companion app
-# For development, use local path. For release, use git URL:
-# companion-pack-protocol = { git = "https://github.com/clip-companion/companion-pack-protocol.git" }
-companion-pack-protocol = { path = "../../companion-pack-protocol" }
+companion-pack-protocol = { git = "https://github.com/clip-companion/companion-pack-protocol.git" }
 
 # Async runtime
 tokio = { version = "1", features = ["full"] }

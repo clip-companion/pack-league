@@ -219,6 +219,7 @@ dependencies = [
 [[package]]
 name = "companion-pack-protocol"
 version = "0.1.0"
+source = "git+https://github.com/clip-companion/companion-pack-protocol.git#fbc761e21a8cc3cf0c412d7598500ba8059a2fa8"
 dependencies = [
  "derive_more",
  "garde",

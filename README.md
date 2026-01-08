@@ -70,34 +70,52 @@ fn main() {
 
 ## Releasing Updates
 
-This pack uses GitHub Actions to automatically build releases when you push a version tag.
-
-### Release Workflow
+Releases are **fully automated**. Just push to main:
 
 ```bash
-# 1. Make your changes and commit
 git add -A && git commit -m "feat: your changes"
-
-# 2. Update version in config.json
-# Edit config.json: "version": "0.2.0"
-git add config.json && git commit -m "chore: bump version to 0.2.0"
-
-# 3. Create and push tag (triggers GitHub Actions)
-git tag v0.2.0
-git push && git push --tags
-
-# 4. GitHub Actions automatically:
-#    - Builds daemon for macOS (arm64, x64), Linux (x64), Windows (x64)
-#    - Builds frontend.js bundle
-#    - Creates checksums.txt
-#    - Publishes GitHub release with all artifacts
-
-# 5. Update packs-index with new version
-cd ~/Projects/packs-index
-# Edit index.json: update "version": "0.2.0" for the league pack
-git add -A && git commit -m "chore: update league pack to v0.2.0"
 git push
 ```
+
+GitHub Actions automatically:
+1. Bumps the patch version in `config.json` (0.1.1 → 0.1.2)
+2. Commits with `[skip ci]` to avoid infinite loops
+3. Creates a git tag (v0.1.2)
+4. Builds daemon for all platforms (macOS arm64/x64, Linux x64, Windows x64)
+5. Builds frontend.js bundle
+6. Creates checksums.txt
+7. Publishes GitHub release with all artifacts
+8. Sends webhook to `packs-index` to update the version
+
+### Manual Version Bumps
+
+For minor/major version bumps, manually edit `config.json`:
+
+```bash
+# Edit config.json to set desired version
+git add config.json && git commit -m "chore: bump version to 0.2.0"
+git push
+```
+
+### Required GitHub Secrets
+
+The release workflow requires one secret:
+
+| Secret | Purpose |
+|--------|---------|
+| `PACKS_INDEX_TOKEN` | Personal Access Token to trigger packs-index update |
+
+**Setting up PACKS_INDEX_TOKEN:**
+
+1. Go to GitHub → Settings → Developer settings → Fine-grained tokens
+2. Create a new token with:
+   - Repository: `clip-companion/packs-index`
+   - Permissions: Contents (read/write)
+3. Add the token as a secret in this repository:
+   ```bash
+   gh secret set PACKS_INDEX_TOKEN
+   # Paste the token when prompted
+   ```
 
 ### How Updates Reach Users
 
@@ -115,6 +133,20 @@ Each release includes:
 - `daemon-win32-x64.exe` - Windows x64
 - `frontend.js` - React component bundle
 - `checksums.txt` - SHA256 checksums
+
+### Running CI Tests Locally
+
+To verify the release configuration is correct before pushing:
+
+```bash
+cd frontend
+pnpm test:ci
+```
+
+This checks that:
+- Cargo.toml uses git URL (not local path) for dependencies
+- package.json uses git URL (not file: path) for dependencies
+- Workflow files are configured correctly
 
 ## License
 
