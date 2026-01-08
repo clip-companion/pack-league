@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@companion/pack-protocol':
-        specifier: file:../../companion-pack-protocol
-        version: file:../../companion-pack-protocol(react@19.2.3)(vite@6.4.1(@types/node@22.19.3))
+        specifier: github:clip-companion/companion-pack-protocol
+        version: https://codeload.github.com/clip-companion/companion-pack-protocol/tar.gz/fbc761e21a8cc3cf0c412d7598500ba8059a2fa8(react@19.2.3)(vite@6.4.1(@types/node@22.19.3))
       clsx:
         specifier: ^2.1.0
         version: 2.1.1
@@ -137,8 +137,9 @@ packages:
     resolution: {integrity: sha512-qQ5m48eI/MFLQ5PxQj4PFaprjyCTLI37ElWMmNs0K8Lk3dVeOdNpB3ks8jc7yM5CDmVC73eMVk/trk3fgmrUpA==}
     engines: {node: '>=6.9.0'}
 
-  '@companion/pack-protocol@file:../../companion-pack-protocol':
-    resolution: {directory: ../../companion-pack-protocol, type: directory}
+  '@companion/pack-protocol@https://codeload.github.com/clip-companion/companion-pack-protocol/tar.gz/fbc761e21a8cc3cf0c412d7598500ba8059a2fa8':
+    resolution: {tarball: https://codeload.github.com/clip-companion/companion-pack-protocol/tar.gz/fbc761e21a8cc3cf0c412d7598500ba8059a2fa8}
+    version: 0.1.0
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
       vite: ^5.0.0 || ^6.0.0 || ^7.0.0
@@ -1105,7 +1106,7 @@ snapshots:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.28.5
 
-  '@companion/pack-protocol@file:../../companion-pack-protocol(react@19.2.3)(vite@6.4.1(@types/node@22.19.3))':
+  '@companion/pack-protocol@https://codeload.github.com/clip-companion/companion-pack-protocol/tar.gz/fbc761e21a8cc3cf0c412d7598500ba8059a2fa8(react@19.2.3)(vite@6.4.1(@types/node@22.19.3))':
     dependencies:
       react: 19.2.3
     optionalDependencies:
