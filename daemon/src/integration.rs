@@ -18,7 +18,10 @@ use crate::types::GameModeContext;
 use crate::{GameflowPhase, LiveClientApi, LiveMatch, RankedEntry, LEAGUE_GAME_ID, LEAGUE_SLUG};
 
 // Use shared types from the protocol crate
-use companion_pack_protocol::{emit_match_data, GameEvent, MatchDataMessage};
+use companion_pack_protocol::{
+    emit_game_events, emit_match_data, emit_moments, emit_statistics, GameEvent, MatchDataMessage,
+    Moment, SummarySource,
+};
 
 /// Subpack indices for League pack
 pub const SUBPACK_LEAGUE: u8 = 0;
@@ -270,7 +273,163 @@ impl LeagueIntegration {
             }
         }
 
+        // Emit events to daemon for timeline storage
+        if !events.is_empty() {
+            if let Some(ref external_id) = self.external_match_id {
+                emit_game_events(self.current_subpack, external_id.clone(), events.clone());
+                debug!(
+                    "Emitted {} game events for match {}",
+                    events.len(),
+                    external_id
+                );
+
+                // Check for recordable moments and emit them
+                let moments = self.detect_moments(&events);
+                if !moments.is_empty() {
+                    emit_moments(self.current_subpack, external_id.clone(), moments.clone());
+                    info!("Emitted {} moments for match {}", moments.len(), external_id);
+                }
+            }
+        }
+
         events
+    }
+
+    /// Detect recordable moments from game events.
+    ///
+    /// Moments are things that might be worth recording as clips.
+    /// The daemon will check trigger configuration to decide whether to actually record.
+    fn detect_moments(&self, events: &[GameEvent]) -> Vec<Moment> {
+        let mut moments = Vec::new();
+        let player_name = self.active_player_name.as_deref().unwrap_or("");
+
+        for event in events {
+            let event_type = &event.event_type;
+            let game_time = event.timestamp_secs;
+
+            // Extract event data fields
+            let killer = event.data.get("killer_name").and_then(|v| v.as_str());
+            let victim = event.data.get("victim_name").and_then(|v| v.as_str());
+            let is_player_involved = event
+                .data
+                .get("is_player_involved")
+                .and_then(|v| v.as_bool())
+                .unwrap_or(false);
+
+            match event_type.as_str() {
+                // Player death
+                "ChampionKill" if victim == Some(player_name) => {
+                    moments.push(Moment::new(
+                        "death",
+                        game_time,
+                        json!({
+                            "killer": killer,
+                            "victim": victim,
+                        }),
+                    ));
+                }
+
+                // Player kill
+                "ChampionKill" if killer == Some(player_name) => {
+                    moments.push(Moment::new(
+                        "kill",
+                        game_time,
+                        json!({
+                            "killer": killer,
+                            "victim": victim,
+                        }),
+                    ));
+                }
+
+                // Multikills (these are separate events in the API)
+                "Multikill" if is_player_involved => {
+                    let kill_streak = event
+                        .data
+                        .get("kill_streak")
+                        .and_then(|v| v.as_i64())
+                        .unwrap_or(2);
+
+                    let moment_id = match kill_streak {
+                        2 => "double_kill",
+                        3 => "triple_kill",
+                        4 => "quadra_kill",
+                        5 => "penta_kill",
+                        _ => "multikill",
+                    };
+
+                    moments.push(Moment::new(
+                        moment_id,
+                        game_time,
+                        json!({
+                            "kill_streak": kill_streak,
+                        }),
+                    ));
+                }
+
+                // First blood
+                "FirstBlood" if is_player_involved => {
+                    moments.push(Moment::new(
+                        "first_blood",
+                        game_time,
+                        json!({
+                            "killer": killer,
+                        }),
+                    ));
+                }
+
+                // Dragon kills
+                "DragonKill" if is_player_involved => {
+                    let dragon_type = event.data.get("dragon_type").and_then(|v| v.as_str());
+                    moments.push(Moment::new(
+                        "dragon_kill",
+                        game_time,
+                        json!({
+                            "dragon_type": dragon_type,
+                        }),
+                    ));
+                }
+
+                // Baron kills
+                "BaronKill" if is_player_involved => {
+                    moments.push(Moment::new(
+                        "baron_kill",
+                        game_time,
+                        json!({}),
+                    ));
+                }
+
+                // Elder dragon
+                "ElderDragonKill" if is_player_involved => {
+                    moments.push(Moment::new(
+                        "elder_dragon_kill",
+                        game_time,
+                        json!({}),
+                    ));
+                }
+
+                // Rift Herald
+                "HeraldKill" if is_player_involved => {
+                    moments.push(Moment::new(
+                        "herald_kill",
+                        game_time,
+                        json!({}),
+                    ));
+                }
+
+                // Ace (killed entire enemy team)
+                "Ace" if is_player_involved => {
+                    moments.push(Moment::new(
+                        "ace",
+                        game_time,
+                        json!({}),
+                    ));
+                }
+
+                _ => {}
+            }
+        }
+
+        moments
     }
 
     /// Get live match data
@@ -286,6 +445,24 @@ impl LeagueIntegration {
                     if let Some(live_match) = LiveMatch::from_game_data(&game_data) {
                         // Store for session end
                         *self.last_live_match.write().await = Some(live_match.clone());
+
+                        // Emit statistics to daemon (with delta detection)
+                        if let Some(ref external_id) = self.external_match_id {
+                            let stats = self.build_live_stats_map(&live_match);
+                            if self.should_emit_stats(&stats) {
+                                emit_statistics(
+                                    self.current_subpack,
+                                    external_id.clone(),
+                                    live_match.game_time_secs,
+                                    stats.clone(),
+                                );
+                                self.last_emitted_stats = Some(stats);
+                                debug!(
+                                    "Emitted statistics for match {} at {:.1}s",
+                                    external_id, live_match.game_time_secs
+                                );
+                            }
+                        }
 
                         return Some(LiveMatchData {
                             game_id: LEAGUE_GAME_ID,
@@ -418,11 +595,15 @@ impl LeagueIntegration {
             });
 
             // Emit SetComplete message
-            let summary_source = if match_data.is_some() { "api" } else { "live_fallback" };
+            let summary_source = if match_data.is_some() {
+                SummarySource::Api
+            } else {
+                SummarySource::LiveFallback
+            };
             emit_match_data(MatchDataMessage::SetComplete {
                 subpack,
                 external_match_id: external_id.clone(),
-                summary_source: summary_source.to_string(),
+                summary_source,
                 final_stats,
             });
 
@@ -507,6 +688,71 @@ impl LeagueIntegration {
         }
 
         stats
+    }
+
+    /// Build a stats HashMap from live match data for emitting during gameplay.
+    ///
+    /// This is separate from `build_stats_map` because live data has different
+    /// fields available compared to end-of-game data.
+    fn build_live_stats_map(&self, live_match: &LiveMatch) -> HashMap<String, serde_json::Value> {
+        let mut stats = HashMap::new();
+
+        if self.current_subpack == SUBPACK_LEAGUE {
+            // League live stats
+            stats.insert("summoner_name".to_string(), json!(live_match.summoner_name));
+            stats.insert("champion".to_string(), json!(live_match.champion));
+            stats.insert("level".to_string(), json!(live_match.level));
+            stats.insert("kills".to_string(), json!(live_match.kills));
+            stats.insert("deaths".to_string(), json!(live_match.deaths));
+            stats.insert("assists".to_string(), json!(live_match.assists));
+            stats.insert("cs".to_string(), json!(live_match.cs));
+            stats.insert("current_gold".to_string(), json!(live_match.current_gold));
+            stats.insert("game_mode".to_string(), json!(live_match.game_mode));
+            stats.insert("team".to_string(), json!(format!("{:?}", live_match.team)));
+            stats.insert("items_json".to_string(), json!(live_match.items));
+            stats.insert("is_dead".to_string(), json!(live_match.is_dead));
+
+            // Optional spell/rune data
+            if let Some(ref spell1) = live_match.spell1 {
+                stats.insert("summoner_spell1".to_string(), json!(spell1.name));
+            }
+            if let Some(ref spell2) = live_match.spell2 {
+                stats.insert("summoner_spell2".to_string(), json!(spell2.name));
+            }
+            if let Some(ref runes) = live_match.runes {
+                stats.insert("keystone_rune".to_string(), json!(runes.keystone_name));
+                stats.insert("secondary_tree".to_string(), json!(runes.secondary_tree_name));
+            }
+            if let Some(ref trinket) = live_match.trinket {
+                stats.insert("trinket".to_string(), json!(trinket.name));
+            }
+        }
+        // TFT live stats would be implemented separately when TFT support is added
+
+        stats
+    }
+
+    /// Check if stats have changed enough to warrant emitting.
+    ///
+    /// Returns true if any stat has changed (excluding game_time_secs which changes every frame).
+    fn should_emit_stats(&self, new_stats: &HashMap<String, serde_json::Value>) -> bool {
+        match &self.last_emitted_stats {
+            None => true, // Always emit first time
+            Some(old_stats) => {
+                // Check if any stat (except game_time_secs) has changed
+                for (key, new_value) in new_stats {
+                    if key == "game_time_secs" {
+                        continue;
+                    }
+                    match old_stats.get(key) {
+                        None => return true, // New key
+                        Some(old_value) if old_value != new_value => return true, // Value changed
+                        _ => continue,
+                    }
+                }
+                false
+            }
+        }
     }
 
     /// Add a game event

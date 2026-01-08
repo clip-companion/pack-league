@@ -2,11 +2,11 @@ import { motion } from "framer-motion";
 import { cn } from "./lib/cn";
 import { formatTimeAgo, formatGameDurationFull, formatLPChange } from "./lib/formatters";
 import { cardHover } from "./lib/animations";
-import type { TFTMatch, TFTPlacement } from "./types";
-import { isTopFour } from "./types";
+import type { AnyTFTMatch, TFTPlacement } from "./types";
+import { isTopFour, getMatchCore } from "./types";
 
 interface TFTMatchCardProps {
-  match: TFTMatch;
+  match: AnyTFTMatch;
   clipCount?: number;
   isSelected?: boolean;
   onClick?: () => void;
@@ -49,6 +49,9 @@ function getPlacementBgClass(placement: TFTPlacement): string {
 }
 
 export function TFTMatchCard({ match, isSelected, onClick }: TFTMatchCardProps) {
+  // Get core data (works with both legacy and new API formats)
+  const core = getMatchCore(match);
+
   // Destructure from match.details (game-specific fields)
   const {
     placement,
@@ -89,7 +92,7 @@ export function TFTMatchCard({ match, isSelected, onClick }: TFTMatchCardProps) 
             {queueName}
           </div>
           <div className="text-xs text-muted-foreground">
-            {formatTimeAgo(match.playedAt)}
+            {formatTimeAgo(core.playedAt)}
           </div>
           <div className="mt-1">
             <span className={cn("text-xs", isTop4 ? "text-win" : "text-loss")}>
@@ -97,7 +100,7 @@ export function TFTMatchCard({ match, isSelected, onClick }: TFTMatchCardProps) 
             </span>
           </div>
           <div className="text-xs text-muted-foreground">
-            {formatGameDurationFull(match.durationSecs)}
+            {formatGameDurationFull(core.durationSecs || 0)}
           </div>
         </div>
 

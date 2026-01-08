@@ -1,10 +1,10 @@
 import { MatchCard as LeagueMatchCard } from "./MatchCard";
 import { TFTMatchCard } from "./TFTMatchCard";
 import { isTFTMatch } from "./types";
-import type { PackMatch, LeagueMatch } from "./types";
+import type { AnyPackMatch, AnyLeagueMatch } from "./types";
 
 interface SmartMatchCardProps {
-  match: PackMatch;
+  match: AnyPackMatch;
   clipCount?: number;
   isSelected?: boolean;
   onClick?: () => void;
@@ -12,6 +12,7 @@ interface SmartMatchCardProps {
 
 /**
  * Smart MatchCard that renders the appropriate card based on game mode
+ * Supports both legacy and new (core/details) match formats
  */
 export function SmartMatchCard(props: SmartMatchCardProps) {
   // Check if this is a TFT match
@@ -19,5 +20,5 @@ export function SmartMatchCard(props: SmartMatchCardProps) {
     return <TFTMatchCard {...props} match={props.match} />;
   }
   // Default to League match card
-  return <LeagueMatchCard {...props} match={props.match as LeagueMatch} />;
+  return <LeagueMatchCard {...props} match={props.match as AnyLeagueMatch} />;
 }

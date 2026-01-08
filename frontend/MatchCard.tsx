@@ -21,10 +21,11 @@ import {
 import { cardHover } from "./lib/animations";
 import { GameIcon } from "./components/GameIcon";
 import { useDDragonReady } from "./hooks/useDDragon";
-import type { LeagueMatch } from "./types";
+import type { AnyLeagueMatch } from "./types";
+import { getMatchCore } from "./types";
 
 interface MatchCardProps {
-  match: LeagueMatch;
+  match: AnyLeagueMatch;
   clipCount?: number;
   isSelected?: boolean;
   onClick?: () => void;
@@ -33,6 +34,9 @@ interface MatchCardProps {
 export function MatchCard({ match, isSelected, onClick }: MatchCardProps) {
   // Subscribe to DDragon ready state to re-render when icons become available
   const ddReady = useDDragonReady();
+
+  // Get core data (works with both legacy and new API formats)
+  const core = getMatchCore(match);
 
   // Destructure from match.details (game-specific fields)
   const {
@@ -58,7 +62,7 @@ export function MatchCard({ match, isSelected, onClick }: MatchCardProps) {
     badges,
   } = match.details;
 
-  const isWin = match.result === "win";
+  const isWin = core.result === "win";
   const kdaLabel = getKDALabel(kills, deaths, assists);
   const lpChange = formatLPChange(lpChangeValue);
 
@@ -116,7 +120,7 @@ export function MatchCard({ match, isSelected, onClick }: MatchCardProps) {
             {gameMode}
           </div>
           <div className="text-xs text-muted-foreground">
-            {formatTimeAgo(match.playedAt)}
+            {formatTimeAgo(core.playedAt)}
           </div>
           <div className="mt-1 flex items-baseline gap-1">
             <span
@@ -141,7 +145,7 @@ export function MatchCard({ match, isSelected, onClick }: MatchCardProps) {
             )}
           </div>
           <div className="text-xs text-muted-foreground">
-            {formatGameDurationFull(match.durationSecs)}
+            {formatGameDurationFull(core.durationSecs || 0)}
           </div>
         </div>
 

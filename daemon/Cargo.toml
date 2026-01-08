@@ -14,7 +14,9 @@ path = "src/lib.rs"
 
 [dependencies]
 # Shared protocol types from companion app
-companion-pack-protocol = { git = "https://github.com/clip-companion/companion-pack-protocol.git" }
+# For development, use local path. For release, use git URL:
+# companion-pack-protocol = { git = "https://github.com/clip-companion/companion-pack-protocol.git" }
+companion-pack-protocol = { path = "../../companion-pack-protocol" }
 
 # Async runtime
 tokio = { version = "1", features = ["full"] }
@@ -53,3 +55,35 @@ regex = "1"
 
 # UUID generation
 uuid = { version = "1", features = ["v4"] }
+
+# Type-safe enums with string conversion
+strum = { version = "0.26", features = ["derive"] }
+
+# Derive macros for reducing newtype boilerplate
+derive_more = { version = "1.0", features = ["display", "from", "deref", "as_ref"] }
+
+# Validation with declarative attributes
+garde = { version = "0.20", features = ["derive"] }
+
+# HTTP retry middleware for resilient requests
+reqwest-middleware = "0.4"
+reqwest-retry = "0.7"
+
+# Rate limiting for external API calls
+governor = "0.8"
+
+[dev-dependencies]
+# Property-based testing - finds edge cases automatically
+proptest = "1.4"
+# Snapshot testing - catches serialization regressions
+insta = { version = "1.34", features = ["json", "redactions"] }
+# Parameterized tests - test multiple inputs concisely
+test-case = "3.3"
+# Async test utilities
+tokio-test = "0.4"
+# Mocking for HTTP clients
+mockall = "0.13"
+# Fake data generation
+fake = { version = "3.0", features = ["derive"] }
+# HTTP mock server
+wiremock = "0.6"
