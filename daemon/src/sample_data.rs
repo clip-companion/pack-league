@@ -110,6 +110,57 @@ const BADGES: &[&str] = &[
     "Most Damage", "Most Gold", "Vision Score", "Comeback",
 ];
 
+// ============================================================================
+// TFT-specific constants
+// ============================================================================
+
+/// TFT champions/units (Set 12 "Magic n' Mayhem" themed names)
+const TFT_UNITS: &[&str] = &[
+    "Ahri", "Akali", "Blitzcrank", "Bard", "Briar", "Cassiopeia", "Diana",
+    "Elise", "Ezreal", "Fiora", "Galio", "Gwen", "Hecarim", "Hwei", "Jax",
+    "Jinx", "Karma", "Kassadin", "Katarina", "Kogmaw", "Lillia", "Morgana",
+    "Neeko", "Nilah", "Nunu", "Olaf", "Poppy", "Rakan", "Rumble", "Ryze",
+    "Seraphine", "Shen", "Shyvana", "Smolder", "Soraka", "Syndra", "Tahm Kench",
+    "Taric", "Tristana", "Twitch", "Varus", "Veigar", "Vex", "Warwick",
+    "Wukong", "Xerath", "Ziggs", "Zilean", "Zoe",
+];
+
+/// TFT traits (synergies)
+const TFT_TRAITS: &[&str] = &[
+    "Arcana", "Chrono", "Dragon", "Druid", "Eldritch", "Faerie", "Frost",
+    "Honeymancy", "Hunter", "Incantor", "Mage", "Multistriker", "Preserver",
+    "Pyro", "Scholar", "Shapeshifter", "Sugarcraft", "Vanguard", "Warrior",
+    "Witchcraft", "Blaster", "Bastion",
+];
+
+/// TFT items
+const TFT_ITEMS: &[&str] = &[
+    "Bloodthirster", "Blue Buff", "Bramble Vest", "Deathblade",
+    "Dragon's Claw", "Edge of Night", "Gargoyle Stoneplate", "Giant Slayer",
+    "Guardbreaker", "Guinsoo's Rageblade", "Hand of Justice", "Hextech Gunblade",
+    "Infinity Edge", "Ionic Spark", "Jeweled Gauntlet", "Last Whisper",
+    "Morellonomicon", "Nashor's Tooth", "Quicksilver", "Rabadon's Deathcap",
+    "Rapid Firecannon", "Redemption", "Runaan's Hurricane", "Spear of Shojin",
+    "Statikk Shiv", "Steadfast Heart", "Sunfire Cape", "Thief's Gloves",
+    "Titan's Resolve", "Warmog's Armor",
+];
+
+/// TFT augments (sample names)
+const TFT_AUGMENTS: &[&str] = &[
+    "Jeweled Lotus", "Buried Treasures", "Caretaker's Favor", "Component Grab Bag",
+    "Cybernetic Implants", "Featherweights", "First Aid Kit", "Gold Reserves",
+    "Idealism", "Investment", "Latent Forge", "Lucky Gloves", "Metabolic Accelerator",
+    "Pandora's Items", "Portable Forge", "Pumping Up", "Scoped Weapons",
+    "Silver Spoon", "Spoils of War", "Starter Kit", "Tiny Titans",
+    "Trade Sector", "Unified Resistance", "Wellness Trust", "What the Forge",
+    "You Have My Bow", "You Have My Sword", "Ascension", "Binary Airdrop",
+    "Blue Battery", "Branching Out", "Built Different", "Cluttered Mind",
+    "Combat Training", "Electrocharge", "Extended Duel", "Final Ascension",
+    "Healing Orbs", "Level Up!", "Living Forge", "March of Progress",
+    "Meditation", "Recombobulator", "Rich Get Richer", "Stand United",
+    "Teaming Up", "The Golden Egg", "Think Fast", "Transfusion",
+];
+
 /// Generate sample League match data
 pub fn generate_league_sample() -> Value {
     let mut rng = thread_rng();
@@ -285,6 +336,30 @@ pub fn generate_tft_sample() -> Value {
     let result = if is_win { "win" } else { "loss" };
     let duration_secs = rng.gen_range(1500..2400); // 25-40 minutes
 
+    // Player level (higher placements tend to have higher levels)
+    let level: u8 = match placement {
+        1..=2 => rng.gen_range(8..=10),
+        3..=4 => rng.gen_range(7..=9),
+        5..=6 => rng.gen_range(6..=8),
+        _ => rng.gen_range(5..=7),
+    };
+
+    // Players eliminated (based on placement - 1st place eliminates more)
+    let players_eliminated: u8 = match placement {
+        1 => rng.gen_range(2..=4),
+        2 => rng.gen_range(1..=3),
+        3..=4 => rng.gen_range(0..=2),
+        _ => rng.gen_range(0..=1),
+    };
+
+    // Total damage to players (higher placements = more damage typically)
+    let total_damage: u32 = match placement {
+        1 => rng.gen_range(80..120),
+        2 => rng.gen_range(60..100),
+        3..=4 => rng.gen_range(40..80),
+        _ => rng.gen_range(20..60),
+    };
+
     // Generate LP change for ranked
     let lp_change: Option<i32> = if rng.gen_bool(0.6) {
         Some(match placement {
@@ -312,6 +387,85 @@ pub fn generate_tft_sample() -> Value {
     } else {
         None
     };
+
+    // Generate units (board composition) - 7-9 units based on level
+    let num_units = (level as usize).min(9);
+    let mut available_units: Vec<&str> = TFT_UNITS.to_vec();
+    available_units.shuffle(&mut rng);
+    let units: Vec<Value> = available_units[..num_units]
+        .iter()
+        .map(|unit| {
+            // Star level: 1-star common, 2-star less common, 3-star rare
+            let tier: u8 = {
+                let roll: f64 = rng.gen();
+                if roll < 0.4 { 1 }
+                else if roll < 0.85 { 2 }
+                else { 3 }
+            };
+
+            // Items: 0-3 items per unit
+            let num_items = rng.gen_range(0..=3);
+            let mut available_items: Vec<&str> = TFT_ITEMS.to_vec();
+            available_items.shuffle(&mut rng);
+            let item_names: Vec<String> = available_items[..num_items]
+                .iter()
+                .map(|s| s.to_string())
+                .collect();
+
+            json!({
+                "character": unit.to_string(),
+                "tier": tier,
+                "itemNames": item_names,
+            })
+        })
+        .collect();
+
+    // Generate traits (active synergies) - 4-7 active traits
+    let num_traits = rng.gen_range(4..=7);
+    let mut available_traits: Vec<&str> = TFT_TRAITS.to_vec();
+    available_traits.shuffle(&mut rng);
+    let traits: Vec<Value> = available_traits[..num_traits]
+        .iter()
+        .map(|trait_name| {
+            let num_units = rng.gen_range(2..=6);
+            let tier_current = rng.gen_range(1..=4);
+            let tier_total = rng.gen_range(tier_current..=5);
+            let style = match tier_current {
+                1 => "bronze",
+                2 => "silver",
+                3 => "gold",
+                _ => "chromatic",
+            };
+
+            json!({
+                "name": trait_name.to_string(),
+                "numUnits": num_units,
+                "style": style,
+                "tierCurrent": tier_current,
+                "tierTotal": tier_total,
+            })
+        })
+        .collect();
+
+    // Generate augments (3 augments per game)
+    let mut available_augments: Vec<&str> = TFT_AUGMENTS.to_vec();
+    available_augments.shuffle(&mut rng);
+    let augments: Vec<Value> = available_augments[..3]
+        .iter()
+        .enumerate()
+        .map(|(i, aug)| {
+            // First augment typically silver, second gold, third prismatic
+            let tier = match i {
+                0 => "silver",
+                1 => "gold",
+                _ => "prismatic",
+            };
+            json!({
+                "name": aug.to_string(),
+                "tier": tier,
+            })
+        })
+        .collect();
 
     // TFT badges
     let tft_badges = ["Top 4", "First Place", "High Roller", "Perfect Game", "Comeback King"];
@@ -355,6 +509,12 @@ pub fn generate_tft_sample() -> Value {
             "lpChange": lp_change,
             "rank": rank,
             "badges": badges,
+            "level": level,
+            "playersEliminated": players_eliminated,
+            "totalDamageToPlayers": total_damage,
+            "traits": traits,
+            "units": units,
+            "augments": augments,
         }
     })
 }
@@ -434,6 +594,26 @@ mod tests {
         assert!(details.get("placement").is_some());
         let placement = details["placement"].as_u64().unwrap();
         assert!((1..=8).contains(&placement));
+
+        // Check new TFT fields
+        assert!(details.get("level").is_some());
+        let level = details["level"].as_u64().unwrap();
+        assert!((5..=10).contains(&level));
+
+        assert!(details.get("traits").is_some());
+        let traits = details["traits"].as_array().unwrap();
+        assert!(!traits.is_empty());
+
+        assert!(details.get("units").is_some());
+        let units = details["units"].as_array().unwrap();
+        assert!(!units.is_empty());
+
+        assert!(details.get("augments").is_some());
+        let augments = details["augments"].as_array().unwrap();
+        assert_eq!(augments.len(), 3);
+
+        assert!(details.get("playersEliminated").is_some());
+        assert!(details.get("totalDamageToPlayers").is_some());
     }
 
     #[test]
