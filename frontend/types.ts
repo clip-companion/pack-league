@@ -230,6 +230,39 @@ export interface GameModeContext {
 export type TFTPlacement = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 /**
+ * TFT trait tier based on active level
+ */
+export type TFTTraitTier = "inactive" | "bronze" | "silver" | "gold" | "chromatic";
+
+/**
+ * TFT active trait (synergy) in a match
+ */
+export interface TFTTrait {
+  name: string;
+  numUnits: number;
+  style: TFTTraitTier;
+  tierCurrent: number;
+  tierTotal: number;
+}
+
+/**
+ * TFT unit (champion) on the board
+ */
+export interface TFTUnit {
+  character: string;
+  tier: 1 | 2 | 3;
+  itemNames: string[];
+}
+
+/**
+ * TFT augment selected during the game
+ */
+export interface TFTAugment {
+  name: string;
+  tier: "silver" | "gold" | "prismatic";
+}
+
+/**
  * TFT match details (game-specific fields)
  * Stored in the `details` field of BaseMatch
  */
@@ -240,6 +273,12 @@ export interface TFTMatchDetails {
   lpChange: number | null;
   rank: string | null;
   badges: string[];
+  level: number;
+  playersEliminated: number;
+  totalDamageToPlayers: number;
+  traits: TFTTrait[];
+  units: TFTUnit[];
+  augments: TFTAugment[];
 }
 
 /**
