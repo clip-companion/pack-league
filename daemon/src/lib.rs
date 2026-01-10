@@ -54,6 +54,7 @@ mod live_client;
 mod live_match_service;
 mod poller;
 pub mod protocol;
+pub mod sample_data;
 mod state;
 mod triggers;
 mod types;

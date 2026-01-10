@@ -122,6 +122,11 @@ impl GamepackHandler for LeagueHandler {
             IsMatchInProgressResponse::still_playing()
         }
     }
+
+    fn get_sample_match_data(&self, subpack: u8) -> Option<serde_json::Value> {
+        info!("Generating sample match data for subpack {}", subpack);
+        league_integration::sample_data::generate_sample(subpack)
+    }
 }
 
 fn main() {
