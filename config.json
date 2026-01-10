@@ -100,8 +100,7 @@
       "league_game": {
         "type": "window",
         "match": {
-          "process": "League of Legends",
-          "title_contains": "(TM)"
+          "process": "League Of Legends"
         }
       },
       "league_client": {

@@ -219,7 +219,7 @@ dependencies = [
 [[package]]
 name = "companion-pack-protocol"
 version = "0.1.0"
-source = "git+https://github.com/clip-companion/companion-pack-protocol.git#fbc761e21a8cc3cf0c412d7598500ba8059a2fa8"
+source = "git+https://github.com/clip-companion/companion-pack-protocol.git#a520b28a9efcd7f7911a814cf4b13b7d1c5f605b"
 dependencies = [
  "derive_more",
  "garde",
@@ -1188,6 +1188,7 @@ dependencies = [
  "insta",
  "mockall",
  "proptest",
+ "rand 0.8.5",
  "regex",
  "reqwest",
  "reqwest-middleware",

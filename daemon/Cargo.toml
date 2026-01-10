@@ -70,6 +70,9 @@ reqwest-retry = "0.7"
 # Rate limiting for external API calls
 governor = "0.8"
 
+# Random number generation for sample data
+rand = "0.8"
+
 [dev-dependencies]
 # Property-based testing - finds edge cases automatically
 proptest = "1.4"
