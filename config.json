@@ -117,7 +117,7 @@
         "sources": [
           {
             "id": "league_game",
-            "fit": "fill"
+            "scale": "contain"
           }
         ]
       },
@@ -127,16 +127,16 @@
           {
             "id": "league_client",
             "anchor": "center",
-            "fit": "native"
+            "scale": "native"
           }
         ]
       },
       "client_fullscreen": {
-        "description": "Client scaled to fill stage",
+        "description": "Client scaled to cover stage",
         "sources": [
           {
             "id": "league_client",
-            "fit": "fill"
+            "scale": "cover"
           }
         ]
       }
