@@ -5,7 +5,7 @@ use regex::Regex;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use std::process::{Command, Stdio};
+use std::process::Command;
 use tracing::{debug, info, warn};
 
 #[derive(Debug, Clone)]
@@ -53,21 +53,24 @@ impl LcuConnection {
 
     #[cfg(target_os = "macos")]
     fn find_install_directory_macos() -> Result<PathBuf> {
-        // Use ps to find the LeagueClientUx process
-        let ps_output = Command::new("ps")
+        // Use ps to get all process args, then filter in Rust
+        // NOTE: Previously used `ps | grep` which caused zombie processes because
+        // the ps Child was dropped without calling .wait(). Using .output() waits
+        // for the process to complete and avoids zombies.
+        let output = Command::new("ps")
             .args(["x", "-o", "args"])
-            .stdout(Stdio::piped())
-            .spawn()
+            .output()
             .map_err(|e| AppError::Other(format!("Failed to run ps: {}", e)))?;
 
-        let grep_output = Command::new("grep")
-            .arg("LeagueClientUx")
-            .stdin(ps_output.stdout.ok_or_else(|| AppError::Other("No stdout from ps".into()))?)
-            .output()
-            .map_err(|e| AppError::Other(format!("Failed to run grep: {}", e)))?;
+        let stdout = String::from_utf8_lossy(&output.stdout);
 
-        let stdout = String::from_utf8_lossy(&grep_output.stdout);
-        Self::extract_install_directory(&stdout)
+        // Find the line containing LeagueClientUx (filter in Rust instead of grep)
+        let league_line = stdout
+            .lines()
+            .find(|line| line.contains("LeagueClientUx"))
+            .unwrap_or("");
+
+        Self::extract_install_directory(league_line)
     }
 
     /// Extract the install directory from the process command line.
