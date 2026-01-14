@@ -4,6 +4,7 @@
 //! Uses the shared companion-pack-protocol crate for the protocol handling.
 
 use std::io;
+use std::sync::RwLock;
 
 use companion_pack_protocol::{
     run_gamepack, GameEvent, GameStatus, GamepackHandler, GamepackResult, InitResponse,
@@ -22,15 +23,18 @@ const GAME_ID: i32 = 1;
 const SLUG: &str = "league";
 
 /// Wrapper that implements GamepackHandler for LeagueIntegration
+///
+/// Uses RwLock for interior mutability so that `&self` trait methods
+/// can call `&mut self` methods on the integration.
 struct LeagueHandler {
     runtime: Runtime,
-    integration: LeagueIntegration,
+    integration: RwLock<LeagueIntegration>,
 }
 
 impl LeagueHandler {
     fn new() -> Self {
         let runtime = Runtime::new().expect("Failed to create tokio runtime");
-        let integration = LeagueIntegration::new();
+        let integration = RwLock::new(LeagueIntegration::new());
         Self {
             runtime,
             integration,
@@ -49,41 +53,53 @@ impl GamepackHandler for LeagueHandler {
     }
 
     fn detect_running(&self) -> bool {
+        let integration = self.integration.read().expect("RwLock poisoned");
         self.runtime
-            .block_on(async { self.integration.detect_running().await })
+            .block_on(async { integration.detect_running().await })
     }
 
     fn get_status(&self) -> GameStatus {
-        // We need &mut self for get_status, so we use interior mutability pattern
-        // For now, return a basic status - the integration will be refactored later
-        let running = self.detect_running();
-        if running {
-            GameStatus::connected("League client detected")
+        let mut integration = self.integration.write().expect("RwLock poisoned");
+        let status = self.runtime.block_on(async { integration.get_status().await });
+
+        // Convert IntegrationStatus to GameStatus
+        let mut game_status = if status.connected {
+            GameStatus::connected(&status.connection_status.to_string())
         } else {
             GameStatus::disconnected()
+        };
+
+        if let Some(phase) = status.game_phase {
+            game_status = game_status.with_phase(phase);
         }
+
+        game_status.in_game(status.is_in_game)
     }
 
     fn poll_events(&mut self) -> Vec<GameEvent> {
+        let mut integration = self.integration.write().expect("RwLock poisoned");
         self.runtime
-            .block_on(async { self.integration.poll_events().await })
+            .block_on(async { integration.poll_events().await })
     }
 
     fn get_live_data(&self) -> Option<serde_json::Value> {
-        // Would need &mut self for the full implementation
-        // For now return None - will be properly implemented with async refactor
-        None
+        let mut integration = self.integration.write().expect("RwLock poisoned");
+        self.runtime.block_on(async {
+            integration.get_live_data().await.map(|data| data.data)
+        })
     }
 
     fn on_session_start(&mut self) -> Option<serde_json::Value> {
+        let mut integration = self.integration.write().expect("RwLock poisoned");
         self.runtime
-            .block_on(async { self.integration.session_start().await })
+            .block_on(async { integration.session_start().await })
     }
 
     fn on_session_end(&mut self, context: serde_json::Value) -> Option<MatchData> {
+        let mut integration = self.integration.write().expect("RwLock poisoned");
         let result = self
             .runtime
-            .block_on(async { self.integration.session_end(context).await });
+            .block_on(async { integration.session_end(context).await });
 
         // Convert from local MatchData to protocol MatchData
         result.map(|m| MatchData::new(m.game_slug, m.game_id, m.result.to_string(), m.details))
@@ -99,8 +115,9 @@ impl GamepackHandler for LeagueHandler {
         external_match_id: &str,
     ) -> IsMatchInProgressResponse {
         // Check if the game is actually still running
+        let integration = self.integration.read().expect("RwLock poisoned");
         let is_running = self.runtime.block_on(async {
-            self.integration.detect_running().await
+            integration.detect_running().await
         });
 
         if !is_running {
