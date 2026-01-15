@@ -224,7 +224,7 @@ const KEYSTONE_ALIASES: Record<string, string> = {
 // Cache Utilities
 // ============================================
 
-import type { PackCacheAPI } from "@companion/pack-protocol";
+import type { PackCacheAPI } from "@companion/gamepack-runtime";
 
 // Cache API reference - set by setPackCache() when context is available
 let packCache: PackCacheAPI | null = null;

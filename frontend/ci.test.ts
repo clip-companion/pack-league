@@ -58,12 +58,12 @@ describe("CI/CD Configuration", () => {
       expect(existsSync(pkgPath)).toBe(true);
     });
 
-    it("uses git URL for @companion/pack-protocol (not local path)", () => {
+    it("uses git URL for @companion/gamepack-runtime (not local path)", () => {
       const pkgPath = join(PACK_ROOT, "frontend", "package.json");
       const content = readFileSync(pkgPath, "utf-8");
       const pkg = JSON.parse(content);
 
-      const protocolDep = pkg.dependencies?.["@companion/pack-protocol"];
+      const protocolDep = pkg.dependencies?.["@companion/gamepack-runtime"];
 
       // For CI to work, we need a git URL or npm package, not file: path
       // If this test fails, change the dependency to use git URL

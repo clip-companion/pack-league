@@ -11,7 +11,7 @@
     "test:ci": "vitest run ci.test.ts"
   },
   "dependencies": {
-    "@companion/pack-protocol": "github:clip-companion/companion-pack-protocol",
+    "@companion/gamepack-runtime": "github:clip-companion/gamepack-runtime",
     "clsx": "^2.1.0",
     "framer-motion": "^11.0.0",
     "lucide-react": "^0.460.0",

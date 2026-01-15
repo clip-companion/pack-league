@@ -1,14 +1,14 @@
 //! League-specific protocol types
 //!
-//! Re-exports shared protocol types from companion-pack-protocol and defines
+//! Re-exports shared types from gamepack-runtime and defines
 //! League-specific data structures.
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-// Re-export shared protocol types
-pub use companion_pack_protocol::{
+// Re-export shared types from gamepack runtime
+pub use gamepack_runtime::{
     GameEvent, GameStatus, GamepackCommand, GamepackResponse, InitResponse,
     MatchData as ProtocolMatchData, PROTOCOL_VERSION,
 };

@@ -50,10 +50,10 @@ pnpm build
 
 ## Development
 
-This pack communicates with the main Clip Companion daemon via NDJSON over stdin/stdout using the `companion-pack-protocol` crate.
+This pack communicates with the main Clip Companion daemon via NDJSON over stdin/stdout using the `gamepack-runtime` crate.
 
 ```rust
-use companion_pack_protocol::{run_gamepack, GamepackHandler};
+use gamepack_runtime::{run_gamepack, GamepackHandler};
 
 struct LeagueHandler { /* ... */ }
 

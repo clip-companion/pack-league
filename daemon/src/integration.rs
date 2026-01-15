@@ -17,8 +17,8 @@ use crate::protocol::{
 use crate::types::GameModeContext;
 use crate::{GameflowPhase, LiveClientApi, LiveMatch, RankedEntry, LEAGUE_GAME_ID, LEAGUE_SLUG};
 
-// Use shared types from the protocol crate
-use companion_pack_protocol::{
+// Use shared types from the gamepack runtime
+use gamepack_runtime::{
     emit_game_events, emit_match_data, emit_moments, emit_statistics, GameEvent, MatchDataMessage,
     Moment, SummarySource,
 };
