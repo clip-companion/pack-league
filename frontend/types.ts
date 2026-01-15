@@ -31,7 +31,7 @@ import type {
   BaseMatch,
   CoreMatchData,
   MatchWithDetails,
-} from "@companion/pack-protocol";
+} from "@companion/gamepack-runtime";
 
 /**
  * League of Legends participant in a match

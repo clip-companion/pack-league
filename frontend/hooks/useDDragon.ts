@@ -8,7 +8,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { usePackCache } from '@companion/pack-protocol';
+import { usePackCache } from '@companion/gamepack-runtime';
 import { onStateChange, initDDragon, setPackCache } from '../lib/ddragon';
 
 interface DDragonState {

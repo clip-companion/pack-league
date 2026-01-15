@@ -4,7 +4,7 @@
 // NOTE: This module does NOT directly access electronAPI.
 // All cache operations go through the PackCacheAPI provided by the host application.
 
-import type { PackCacheAPI } from "@companion/pack-protocol";
+import type { PackCacheAPI } from "@companion/gamepack-runtime";
 
 // In-memory cache of URL -> data URL (for instant access after first load)
 const memoryCache = new Map<string, string>();

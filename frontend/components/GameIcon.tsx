@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { usePackCache } from '@companion/pack-protocol';
+import { usePackCache } from '@companion/gamepack-runtime';
 import { cn } from '../lib/cn';
 import { getCachedImageUrl, isImageCached } from '../lib/image-cache';
 

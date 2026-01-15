@@ -5,7 +5,7 @@
  * for the multi-game architecture.
  */
 
-import type { GamePack, GamePackResources, ResourceState } from "@companion/pack-protocol";
+import type { GamePack, GamePackResources, ResourceState } from "@companion/gamepack-runtime";
 import type { LeagueMatch, LeagueLiveMatch } from "./types";
 import { SmartMatchCard as MatchCard } from "./SmartMatchCard";
 import { SmartLiveMatchCard as LiveMatchCard } from "./SmartLiveMatchCard";

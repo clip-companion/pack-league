@@ -1,12 +1,12 @@
 //! League Pack Daemon Entry Point
 //!
 //! Standalone binary that communicates with the main daemon via NDJSON over stdin/stdout.
-//! Uses the shared companion-pack-protocol crate for the protocol handling.
+//! Uses the gamepack-runtime crate for the protocol handling.
 
 use std::io;
 use std::sync::RwLock;
 
-use companion_pack_protocol::{
+use gamepack_runtime::{
     run_gamepack, GameEvent, GameStatus, GamepackHandler, GamepackResult, InitResponse,
     IsMatchInProgressResponse, MatchData,
 };
